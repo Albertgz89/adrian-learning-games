@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Adrian's Learning Games</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Adrian Learns">
+<meta name="theme-color" content="#5b8cff">
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%}
+  body{
+    font-family:"Baloo 2","Trebuchet MS",system-ui,sans-serif;color:#22315b;
+    background:linear-gradient(160deg,#5b8cff,#a06bff);
+    min-height:100%;display:flex;align-items:center;justify-content:center;padding:18px;
+  }
+  .wrap{width:min(560px,100%);text-align:center}
+  .rocket{width:clamp(110px,30vw,160px);height:auto;filter:drop-shadow(0 12px 22px rgba(10,15,60,.35))}
+  h1{color:#fff;font-size:clamp(30px,8vw,52px);margin:.2em 0 .1em;text-shadow:0 3px 0 rgba(0,0,0,.2)}
+  p.sub{color:#e6ebff;font-size:18px;margin:0 0 22px}
+  a.game{
+    display:flex;align-items:center;gap:16px;text-decoration:none;color:#22315b;
+    background:#fff;border-radius:24px;padding:18px 20px;margin:14px 0;text-align:left;
+    box-shadow:0 10px 0 rgba(10,15,60,.25);transition:transform .06s, box-shadow .06s;
+  }
+  a.game:active{transform:translateY(6px);box-shadow:0 4px 0 rgba(10,15,60,.25)}
+  a.game .ic{font-size:44px;line-height:1}
+  a.game b{display:block;font-size:22px}
+  a.game span{color:#6b7aa8;font-size:15px;font-weight:700}
+  .foot{color:#cdd6ff;font-size:13px;margin-top:22px;font-weight:700}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <img class="rocket" src="icon-192.png" alt="">
+  <h1>Adrian's Learning Games</h1>
+  <p class="sub">Pick a game and blast off! 🚀</p>
+
+  <a class="game" href="Adrians-Learning-Quest.html">
+    <span class="ic">🗺️</span>
+    <span><b>Learning Quest</b><span>9 worlds · numbers, reading, time &amp; money</span></span>
+  </a>
+  <a class="game" href="Word-and-Math-Blaster.html">
+    <span class="ic">☄️</span>
+    <span><b>Word &amp; Math Blaster</b><span>spell it, read it, blast the right answer</span></span>
+  </a>
+
+  <div class="foot">Progress, prizes and reports save on this device.</div>
+</div>
+<script>
+  if('serviceWorker' in navigator){
+    try{ navigator.serviceWorker.register('sw.js'); }catch(e){}
+  }
+</script>
+</body>
+</html>
