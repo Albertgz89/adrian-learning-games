@@ -1,0 +1,13 @@
+{
+  "name": "adrian-learning-games",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Two single-file browser learning games for Adrian, with an automated self-check.",
+  "scripts": {
+    "verify": "node verify.mjs"
+  },
+  "devDependencies": {
+    "jsdom": "^24.1.3"
+  }
+}
