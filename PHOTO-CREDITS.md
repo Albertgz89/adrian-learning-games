@@ -13,3 +13,10 @@ Word Builder pictures. Photos are CC0 / Public Domain Mark from Openverse; sun/s
 - **sun** — original SVG illustration (no external source)
 - **star** — original SVG illustration (no external source)
 - **rain** — original SVG illustration (no external source)
+
+## Coins (Money World)
+Real US coin obverse photos, public domain (US Mint coinage imagery / Wikimedia Commons):
+- **penny** — 2025 Lincoln cent obverse (uncirculated, Philadelphia) · commons.wikimedia.org
+- **nickel** — Jefferson nickel obverse (uncirculated) · commons.wikimedia.org
+- **dime** — Roosevelt dime obverse (2013 proof) · commons.wikimedia.org
+- **quarter** — 1994-P Washington quarter obverse · commons.wikimedia.org
