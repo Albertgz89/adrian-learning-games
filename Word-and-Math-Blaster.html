@@ -420,9 +420,11 @@ function genBuilderRound(){
   let it=pick(bank), g=0;
   while(recentBuild.indexOf(it[0])>=0 && g++<40) it=pick(bank);
   rememberBuild(it[0]);
-  const word=it[0], pic=PICS[word]||emojiPicURI(it[1]);
-  if(type==='fill') return { type:'fill', word, blank:rint(word.length), pic };
-  return { type:type, word:word, pic:pic };
+  const word=it[0];
+  const pic='art/word-'+word+'.jpg';                   // illustrated card (Higgsfield)
+  const picFb=PICS[word]||emojiPicURI(it[1]);          // photo/emoji fallback if art missing
+  if(type==='fill') return { type:'fill', word, blank:rint(word.length), pic, picFb };
+  return { type:type, word:word, pic:pic, picFb:picFb };
 }
 
 function builderIsFull(t){ return t==='build'||t==='sight'||t==='longvowel'; }
@@ -498,7 +500,11 @@ function renderBuilder(){
     cue.innerHTML='';
     if(r.pic){
       let picEl;
-      if(/^data:|^https?:/.test(r.pic)){ picEl=document.createElement('img'); picEl.className='cuePhoto'; picEl.src=r.pic; picEl.alt=r.word; }
+      if(/^data:|^https?:|^art\//.test(r.pic)){
+        picEl=document.createElement('img'); picEl.className='cuePhoto'; picEl.alt=r.word;
+        if(r.picFb){ picEl.onerror=function(){ picEl.onerror=null; picEl.src=r.picFb; }; }
+        picEl.src=r.pic;
+      }
       else { picEl=document.createElement('div'); picEl.className='cuePic'; picEl.textContent=r.pic; }
       cue.appendChild(picEl);
     }

@@ -302,7 +302,7 @@ try {
     if (r.type !== 'sight') {
       picRounds++;
       const img = w.document.querySelector('#bCue img');
-      if (img && /^data:image\//.test(img.getAttribute('src') || '')) pics++;
+      if (img && /^(data:image\/|art\/)/.test(img.getAttribute('src') || '')) pics++;
     }
     w.nextWord();
   }
