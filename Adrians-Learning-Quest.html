@@ -47,11 +47,16 @@
   .big:active{transform:translateY(5px);box-shadow:0 3px 0 #d9531c}
   .worlds{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-top:8px}
   .world{
-    border:none;cursor:pointer;font-family:inherit;border-radius:22px;padding:18px 10px;color:#fff;
-    font-weight:800;font-size:18px;box-shadow:0 8px 0 rgba(0,0,0,.18);transition:transform .06s, box-shadow .06s;
+    position:relative;border:none;cursor:pointer;font-family:inherit;border-radius:22px;padding:0;color:#fff;
+    font-weight:800;font-size:18px;overflow:hidden;aspect-ratio:1/1;
+    box-shadow:0 8px 0 rgba(0,0,0,.18);transition:transform .06s, box-shadow .06s;
   }
   .world:active{transform:translateY(5px);box-shadow:0 3px 0 rgba(0,0,0,.18)}
-  .world .we{display:block;font-size:42px;margin-bottom:6px}
+  .world .wimg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .world .we{display:none;font-size:48px;position:absolute;top:16px;left:0;right:0;text-align:center}
+  .world.noimg .we{display:block}
+  .world .wlabel{position:absolute;left:0;right:0;bottom:0;padding:26px 6px 10px;font-size:15px;line-height:1.15;
+    background:linear-gradient(transparent, rgba(10,15,50,.88));text-shadow:0 1px 3px rgba(0,0,0,.6)}
   .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:10px}
   .pill{background:#eef2ff;border-radius:999px;padding:8px 14px;font-weight:800;font-size:16px}
   .pill.score{background:#fff6da}
@@ -1088,6 +1093,9 @@ function startGame(){
   say('Choose a world, '+player);
 }
 
+var WORLD_ART={numbers:'art/world-numbers.jpg',phonics:'art/world-phonics.jpg',time:'art/world-time.jpg',
+  money:'art/world-money.jpg',calendar:'art/world-calendar.jpg',shapes:'art/world-shapes.jpg',
+  colors:'art/world-colors.jpg',words:'art/world-words.jpg',animals:'art/world-animals.jpg'};
 function buildWorldGrid(){
   const grid=$('worldGrid'); if(!grid) return;
   grid.innerHTML='';
@@ -1095,7 +1103,12 @@ function buildWorldGrid(){
     const w=BANKS[key];
     const b=document.createElement('button');
     b.className='world'; b.style.background=w.color;
-    b.innerHTML=`<span class="we">${w.emoji}</span>${w.title}`;
+    const img=document.createElement('img'); img.className='wimg'; img.alt='';
+    img.onerror=function(){ b.classList.add('noimg'); img.remove(); };
+    img.src=WORLD_ART[key]||'missing.jpg';
+    const em=document.createElement('span'); em.className='we'; em.textContent=w.emoji;
+    const lb=document.createElement('span'); lb.className='wlabel'; lb.textContent=w.title;
+    b.appendChild(img); b.appendChild(em); b.appendChild(lb);
     b.addEventListener('click',()=>startRound(key));
     grid.appendChild(b);
   }
