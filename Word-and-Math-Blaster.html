@@ -151,6 +151,7 @@
   <section id="blasterPanel" class="panel">
     <div class="ptitle">
       <h2>☄️ Math Blaster</h2>
+      <button class="cueBtn" id="gSay" type="button" title="Say the problem again">🔊 Say it</button>
       <span class="pill heart" id="gLives">❤️❤️❤️❤️❤️❤️</span>
       <span class="pill gold" id="gScore">⭐ 0</span>
     </div>
@@ -1048,6 +1049,8 @@ function startBlaster(){
 function newWave(){
   const p = makeMath(game.level);
   game.prompt = p.q;
+  game.say = 'What is '+p.q.replace(/\s*−\s*/,' minus ').replace(/\s*\+\s*/,' plus ')+'?';
+  say(game.say);                      // read each new problem aloud (🔊 button repeats it)
   sizeCanvas();
   const choices = shuffle(p.choices.slice());
   const n = choices.length;
@@ -1421,6 +1424,7 @@ function blasterOpen(){ const el=$('blasterPanel'); return !!(el && el.classList
   const bSkip=$('bSkip'); if(bSkip) bSkip.addEventListener('click',nextWord);
   const rDone=$('rDone'); if(rDone) rDone.addEventListener('click',iReadIt);
   const gNew=$('gNew'); if(gNew) gNew.addEventListener('click',()=>{ if(game.lives<=0) startBlaster(); else newWave(); });
+  const gSay=$('gSay'); if(gSay) gSay.addEventListener('click',()=>{ if(game.say) say(game.say,{rate:0.9}); });
 
   // ----- Math Blaster controls -----
   const canvas=$('bCanvas');

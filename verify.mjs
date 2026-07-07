@@ -223,6 +223,12 @@ try {
     if (/\+/.test(mq.q)) { sawAdd = true; if (!mq.say || mq.say.indexOf('plus') < 0) mathSpeech = false; }
   }
   ok(mathSpeech && sawSub && sawAdd, 'math speech: symbol questions are spoken as "plus"/"minus"');
+  // Repeat-the-question button: present on the quiz screen and safe to click.
+  w.startRound('numbers');
+  const sayBtn = w.document.getElementById('sayBtn');
+  let sayOk = !!sayBtn;
+  try { if (sayBtn) sayBtn.click(); } catch (e) { sayOk = false; }
+  ok(sayOk, 'Quest: 🔊 "Say it again" button repeats the question');
 } catch (e) { ok(false, 'Quest threw: ' + e.message); }
 
 // ============================ Word-and-Math-Blaster.html ============================
@@ -376,6 +382,12 @@ try {
   ok(rd2.NO && rd2.NO.a >= 1 && (rd2.PH || rd2.HFW) && rd2.COMP && rd2.COMP.c >= 1,
      'Blaster logs to i-Ready domains (math→NO, spelling→PH/HFW, reading→COMP)');
   ok(!!w.document.getElementById('repBtn'), 'Blaster: progress report button is present');
+  // Spoken math problems + repeat button.
+  [...w.document.querySelectorAll('#menu .btn')].find(b => /Math Blaster/.test(b.textContent)).click();
+  const gSay = w.document.getElementById('gSay');
+  let gSayOk = !!gSay && typeof B.game.say === 'string' && /minus|plus/.test(B.game.say);
+  try { if (gSay) gSay.click(); } catch (e) { gSayOk = false; }
+  ok(gSayOk, 'Math Blaster: problem is spoken as plus/minus with a 🔊 repeat button (' + (B.game.say || 'none') + ')');
 } catch (e) { ok(false, 'Blaster threw: ' + e.message); }
 
 // ============================ summary ============================
