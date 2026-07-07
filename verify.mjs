@@ -307,6 +307,32 @@ try {
   }
   ok(picRounds > 0 && pics === picRounds, 'Word Builder shows an embedded image for every picture word (' + pics + '/' + picRounds + ')');
 
+  // Regression: variety — a run of rounds must not recycle a small word list.
+  const buildWords = new Set(); let backToBack = 0; let prevW = '';
+  for (let n = 0; n < 24; n++) {
+    const r = B.builder.round; if (!r) break;
+    if (r.word === prevW) backToBack++;
+    prevW = r.word; buildWords.add(r.word);
+    w.nextWord();
+  }
+  ok(buildWords.size >= 14 && backToBack === 0, 'Word Builder variety: ' + buildWords.size + ' distinct words in 24 rounds, no repeats in a row');
+  // Adaptive: 3 clean solves raise the builder level.
+  w.eval('localStorage.setItem("wmb-build-lvl","1"); builder.streak=0;');
+  let solvedClean = 0;
+  while (solvedClean < 3) {
+    const r = B.builder.round;
+    const seq3 = (r.type === 'build' || r.type === 'sight' || r.type === 'longvowel') ? r.word.split('') : [r.word[r.blank]];
+    let good = true;
+    for (const ch of seq3) {
+      const t = [...w.document.querySelectorAll('#bTray .tile')].find(x => !x.disabled && x.textContent === ch.toUpperCase());
+      if (!t) { good = false; break; }
+      t.click();
+    }
+    if (good) solvedClean++;
+    w.nextWord();
+  }
+  ok(w.eval('buildLevel()') === 2, 'Word Builder adapts: 3 clean words raise the level (now ' + w.eval('buildLevel()') + ')');
+
   // Read It Yourself — the sentence must render as tappable words
   [...w.document.querySelectorAll('#menu .btn')].find(b => /Read It Yourself/.test(b.textContent)).click();
   const words = w.document.querySelectorAll('#rText .rword').length;
