@@ -205,18 +205,19 @@ function genMath(level){
     const a=rng(0,max), b=rng(0,Math.max(1,max-a)), s=a+b;
     if(level>=2 && a>0 && b>0 && rint(10)<4)
       return { q:st.add(a,b), right:String(s), choices:numChoices(s), hint:`${a} + ${b}` };
-    return { q:`${a} + ${b} = ?`, right:String(s), choices:numChoices(s), hint:'Count up!' };
+    return { q:`${a} + ${b} = ?`, say:`What is ${a} plus ${b}?`, right:String(s), choices:numChoices(s), hint:'Count up!' };
   }
   if(kind===1){ // subtraction — sometimes told as a themed story
     const a=rng(Math.min(10,max),max), b=rng(0,a), s=a-b;
     if(level>=2 && b>0 && rint(10)<4)
       return { q:st.sub(a,b), right:String(s), choices:numChoices(s), hint:`${a} − ${b}` };
-    return { q:`${a} − ${b} = ?`, right:String(s), choices:numChoices(s), hint:'Count back!' };
+    return { q:`${a} − ${b} = ?`, say:`What is ${a} minus ${b}?`, right:String(s), choices:numChoices(s), hint:'Count back!' };
   }
   if(kind===2){ // count by — what comes next (Algebra & Algebraic Thinking)
     const step=pick(level<=2?[1,2]:[1,2,5,10]); const start=rng(0,Math.max(4,max-step*3));
     const seq=[start,start+step,start+step*2];
-    return { q:`${seq.join(', ')}, ?`, right:String(start+step*3), choices:numChoices(start+step*3), hint:`Skip count by ${step}`, dom:'ALG' };
+    return { q:`${seq.join(', ')}, ?`, say:`What number comes next? ${seq.join(', ')}...`,
+             right:String(start+step*3), choices:numChoices(start+step*3), hint:`Skip count by ${step}`, dom:'ALG' };
   }
   if(kind===3){ // pick the biggest of four numbers
     const lo=Math.max(2,Math.floor(max/4)); const set=new Set();
@@ -298,23 +299,51 @@ function genShapes(){
   const s=pick(shapes); return { q:s.clue+' What shape is it?', right:s.n, choices:wordChoices(s.n,shapes.map(x=>x.n)), hint:'Picture the shape.' };
 }
 
-// Color World — color of common things.
-function genColors(){
-  const things=[
-    {t:'a banana',c:'Yellow'},{t:'the grass',c:'Green'},{t:'the sky on a sunny day',c:'Blue'},
-    {t:'a strawberry',c:'Red'},{t:'an orange',c:'Orange'},{t:'a grape',c:'Purple'},
-    {t:'fresh snow',c:'White'},{t:'a piece of coal',c:'Black'},{t:'chocolate',c:'Brown'},{t:'cotton candy',c:'Pink'},
-  ];
-  const palette=['Yellow','Green','Blue','Red','Orange','Purple','White','Black','Brown','Pink'];
-  const s=pick(things);
+// Color World — big bank of everyday things + color-mixing at higher levels.
+// An anti-repeat window keeps the same thing from coming back four times in a row.
+const COLOR_THINGS=[
+  {t:'a banana',c:'Yellow'},{t:'the sun',c:'Yellow'},{t:'a school bus',c:'Yellow'},{t:'a rubber duck',c:'Yellow'},
+  {t:'the grass',c:'Green'},{t:'a frog',c:'Green'},{t:'a leaf in summer',c:'Green'},{t:'broccoli',c:'Green'},
+  {t:'the sky on a sunny day',c:'Blue'},{t:'the ocean',c:'Blue'},{t:'a blueberry',c:'Blue'},{t:'blue jeans',c:'Blue'},
+  {t:'a strawberry',c:'Red'},{t:'a fire truck',c:'Red'},{t:'a stop sign',c:'Red'},{t:'a ladybug',c:'Red'},
+  {t:'an orange',c:'Orange'},{t:'a carrot',c:'Orange'},{t:'a pumpkin',c:'Orange'},{t:'a basketball',c:'Orange'},
+  {t:'a grape',c:'Purple'},{t:'an eggplant',c:'Purple'},{t:'a plum',c:'Purple'},
+  {t:'fresh snow',c:'White'},{t:'a polar bear',c:'White'},{t:'a baseball',c:'White'},{t:'milk',c:'White'},
+  {t:'a piece of coal',c:'Black'},{t:'a bat at night',c:'Black'},{t:'a bowling ball',c:'Black'},
+  {t:'chocolate',c:'Brown'},{t:'a teddy bear',c:'Brown'},{t:'a tree trunk',c:'Brown'},{t:'a football',c:'Brown'},
+  {t:'cotton candy',c:'Pink'},{t:'a flamingo',c:'Pink'},{t:'a pig',c:'Pink'},
+  {t:'an elephant',c:'Gray'},{t:'a rain cloud',c:'Gray'},{t:'a shark',c:'Gray'},
+];
+const COLOR_MIXES=[
+  {a:'red',b:'yellow',c:'Orange'},{a:'blue',b:'yellow',c:'Green'},{a:'red',b:'blue',c:'Purple'},
+  {a:'red',b:'white',c:'Pink'},{a:'black',b:'white',c:'Gray'},{a:'blue',b:'green',c:'Teal'},
+];
+var recentColors=[];
+function genColors(level){
+  if(level==null) level=rng(1,9);
+  const palette=['Yellow','Green','Blue','Red','Orange','Purple','White','Black','Brown','Pink','Gray'];
+  if(level>=4 && rint(10)<3){ // color mixing
+    const m=pick(COLOR_MIXES);
+    return { q:`What color do you get when you mix ${m.a} and ${m.b}?`, right:m.c,
+             choices:wordChoices(m.c,[...palette,'Teal']), hint:'Imagine the paints swirling together.' };
+  }
+  let s=pick(COLOR_THINGS), g=0;
+  while(recentColors.indexOf(s.t)>=0 && g++<30) s=pick(COLOR_THINGS);
+  recentColors.push(s.t); if(recentColors.length>10) recentColors.shift();
   return { q:`What color is ${s.t}?`, right:s.c, choices:wordChoices(s.c,palette), hint:'Picture it in your head.' };
 }
 
-// Sight Words — read it / which one says…
-const SIGHT=['the','and','you','was','for','are','they','said','have','with','this','that','what','little','here'];
+// Sight Words — hear it, find it. The word is SPOKEN, never shown in the question
+// (printing it would turn reading into shape-matching).
+const SIGHT=['the','and','you','was','for','are','they','said','have','with','this','that','what','little','here',
+             'where','come','some','one','two','like','see','can','play','went','look','who','away'];
+var recentSight=[];
 function genSight(){
-  const right=pick(SIGHT);
-  return { q:`Tap the word that says “${right}”.`, right, choices:wordChoices(right,SIGHT), hint:'Read each word.' };
+  let right=pick(SIGHT), g=0;
+  while(recentSight.indexOf(right)>=0 && g++<30) right=pick(SIGHT);
+  recentSight.push(right); if(recentSight.length>8) recentSight.shift();
+  return { q:'🔊 Listen! Find it below.', say:'Find the word...  '+right, replay:right,
+           right, choices:wordChoices(right,SIGHT), hint:'Tap 🔊 to hear it again.' };
 }
 
 // Animal World — homes, sounds, babies.
@@ -1034,7 +1063,17 @@ function renderQuestion(){
   const q=cur.q;
   const qt=$('qtext'); if(qt) qt.textContent=q.q;
   const pic=$('qpic');
-  if(pic){ pic.innerHTML=''; if(q.pic){ const img=document.createElement('img'); img.className='qimg'; img.src=q.pic; img.alt=''; pic.appendChild(img); } }
+  if(pic){
+    pic.innerHTML='';
+    if(q.pic){ const img=document.createElement('img'); img.className='qimg'; img.src=q.pic; img.alt=''; pic.appendChild(img); }
+    if(q.replay){ // listen-first questions get a big replay button
+      const rb=document.createElement('button');
+      rb.type='button'; rb.className='themebtn'; rb.style.fontSize='22px'; rb.style.padding='14px 22px';
+      rb.textContent='🔊 Hear it again';
+      rb.addEventListener('click',()=>say(q.replay,{rate:0.85}));
+      pic.appendChild(rb);
+    }
+  }
   const qh=$('qhint'); if(qh) qh.textContent=q.hint||'';
   const fb=$('feedback'); if(fb) fb.textContent='';
   const nb=$('nextBtn'); if(nb) nb.style.display='none';
@@ -1049,7 +1088,7 @@ function renderQuestion(){
     }
   }
   updateLevelPill();
-  say(q.q);
+  say(q.say || q.q);
 }
 
 function chooseAnswer(btn, label){

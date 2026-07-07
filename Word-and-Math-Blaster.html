@@ -315,10 +315,10 @@ function makeWord(level){
     const labels=wordChoices(answer,others);
     return { q:`Which word starts with /${letter}/ ?`, prompt:`Starts with ${letter}`, answer, choices:asObjs(labels,answer) };
   }
-  // read the sight word
+  // read the sight word — spoken, never printed (printing it would give the answer away)
   const answer=pick(SIGHT_WORDS);
   const labels=wordChoices(answer,SIGHT_WORDS);
-  return { q:`Tap the word that says “${answer}”.`, prompt:`Find: ${answer}`, answer, choices:asObjs(labels,answer) };
+  return { q:'🔊 Listen! Find it below.', say:'Find the word...  '+answer, replay:answer, prompt:'Listen!', answer, choices:asObjs(labels,answer) };
 }
 
 /* ===========================================================================

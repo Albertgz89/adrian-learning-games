@@ -201,6 +201,28 @@ try {
   ok(R.placement(3.5) === 'Mid K' && R.placement(5.5) === 'Early Grade 1' && R.placement(9) === 'Grade 2+',
      'placement labels map levels to grade placements (Mid K / Early Grade 1 / Grade 2+)');
   R.hide();
+
+  // Regression: sight-word questions must SPEAK the target, never print it.
+  w.eval('window.__gs=genSight; window.__gcol=genColors;');
+  let sightLeak = 0, sightAudio = true;
+  for (let i = 0; i < 200; i++) {
+    const sq = w.__gs();
+    if (new RegExp('\\b' + sq.right + '\\b', 'i').test(sq.q)) sightLeak++;
+    if (!sq.say || !sq.replay || sq.say.indexOf(sq.right) < 0) sightAudio = false;
+  }
+  ok(sightLeak === 0 && sightAudio, 'sight words: answer is spoken (say/replay) and never printed in the question');
+  // Regression: colors don't repeat back-to-back and draw from a wide bank.
+  let colRepeats = 0; const seen2 = new Set(); let prevQ = '';
+  for (let i = 0; i < 40; i++) { const cq = w.__gcol(1); if (cq.q === prevQ) colRepeats++; prevQ = cq.q; seen2.add(cq.q); }
+  ok(colRepeats === 0 && seen2.size >= 15, 'colors: no back-to-back repeats, wide variety (' + seen2.size + ' distinct in 40 draws)');
+  // Regression: math speech says "plus"/"minus" instead of reading symbols.
+  let mathSpeech = true, sawSub = false, sawAdd = false;
+  for (let i = 0; i < 400; i++) {
+    const mq = w.__gm(5);
+    if (/−/.test(mq.q)) { sawSub = true; if (!mq.say || mq.say.indexOf('minus') < 0) mathSpeech = false; }
+    if (/\+/.test(mq.q)) { sawAdd = true; if (!mq.say || mq.say.indexOf('plus') < 0) mathSpeech = false; }
+  }
+  ok(mathSpeech && sawSub && sawAdd, 'math speech: symbol questions are spoken as "plus"/"minus"');
 } catch (e) { ok(false, 'Quest threw: ' + e.message); }
 
 // ============================ Word-and-Math-Blaster.html ============================
