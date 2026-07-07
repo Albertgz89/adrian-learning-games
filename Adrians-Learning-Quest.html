@@ -642,7 +642,7 @@ var COLLECT = {
   _uri(svg){ return 'data:image/svg+xml;utf8,'+encodeURIComponent(svg); },
   // Generated character art (art/ folder, Higgsfield); SVG art is the fallback
   // via data-fb + onerror so the collection still works from a lone HTML file.
-  itemArt(set,i){ return set==='monster' ? 'art/monster-'+i+'.jpg' : this._uri(this.itemSVG(set,i)); },
+  itemArt(set,i){ return set==='monster' ? 'art/monster-'+i+'.jpg' : 'art/card-'+set+'-'+i+'.jpg'; },
   ensureUI(){
     if(document.getElementById('colBtn')) return;
     const st=document.createElement('style');

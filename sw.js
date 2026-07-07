@@ -1,6 +1,6 @@
 // Service worker — makes the games installable and fully playable offline.
 // Bump CACHE_VERSION whenever any game file changes so iPads pick up updates.
-const CACHE_VERSION = 'adrian-games-v9';
+const CACHE_VERSION = 'adrian-games-v10';
 const ASSETS = [
   './',
   './index.html',
@@ -14,6 +14,13 @@ const ASSETS = [
   './art/monster-0.jpg','./art/monster-1.jpg','./art/monster-2.jpg','./art/monster-3.jpg','./art/monster-4.jpg',
   './art/monster-5.jpg','./art/monster-6.jpg','./art/monster-7.jpg','./art/monster-8.jpg','./art/monster-9.jpg',
   './art/bg-space.jpg','./art/bg-baseball.jpg','./art/bg-golf.jpg','./art/bg-monster.jpg','./art/hero.jpg',
+  // collection card art
+  './art/card-baseball-0.jpg','./art/card-baseball-1.jpg','./art/card-baseball-2.jpg','./art/card-baseball-3.jpg','./art/card-baseball-4.jpg',
+  './art/card-baseball-5.jpg','./art/card-baseball-6.jpg','./art/card-baseball-7.jpg','./art/card-baseball-8.jpg','./art/card-baseball-9.jpg',
+  './art/card-golf-0.jpg','./art/card-golf-1.jpg','./art/card-golf-2.jpg','./art/card-golf-3.jpg','./art/card-golf-4.jpg',
+  './art/card-golf-5.jpg','./art/card-golf-6.jpg','./art/card-golf-7.jpg','./art/card-golf-8.jpg','./art/card-golf-9.jpg',
+  './art/card-space-0.jpg','./art/card-space-1.jpg','./art/card-space-2.jpg','./art/card-space-3.jpg','./art/card-space-4.jpg',
+  './art/card-space-5.jpg','./art/card-space-6.jpg','./art/card-space-7.jpg','./art/card-space-8.jpg','./art/card-space-9.jpg',
   // word cards
   './art/word-ant.jpg','./art/word-apple.jpg','./art/word-ball.jpg','./art/word-banana.jpg','./art/word-bear.jpg','./art/word-bed.jpg',
   './art/word-bee.jpg','./art/word-bell.jpg','./art/word-bike.jpg','./art/word-bird.jpg','./art/word-boat.jpg','./art/word-bone.jpg',
