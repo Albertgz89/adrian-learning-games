@@ -22,4 +22,4 @@ Real US coin obverse photos, public domain (US Mint coinage imagery / Wikimedia 
 - **quarter** — 1994-P Washington quarter obverse · commons.wikimedia.org
 
 ## Monster Friends collection art
-Original characters generated with Higgsfield AI (Recraft V4.1) for this app, July 2026 — files art/monster-0..9.jpg.
+Original characters and world backgrounds generated with Higgsfield AI (Recraft V4.1) for this app, July 2026 — files art/monster-0..9.jpg, art/bg-*.jpg, art/hero.jpg.

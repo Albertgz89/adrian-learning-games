@@ -486,6 +486,11 @@ function applyTheme(name){
   if(!THEMES[name]) name='space';
   theme=name; const t=THEMES[name], r=document.documentElement;
   if(r && r.style){ r.style.setProperty('--bg1',t.bg1); r.style.setProperty('--bg2',t.bg2); r.style.setProperty('--accent',t.accent); }
+  try{
+    document.body.style.backgroundImage='linear-gradient(rgba(20,25,65,.5),rgba(20,25,65,.72)), url("art/bg-'+name+'.jpg"), linear-gradient(160deg,'+t.bg1+','+t.bg2+')';
+    document.body.style.backgroundSize='cover';
+    document.body.style.backgroundPosition='center';
+  }catch(e){}
   try{ localStorage.setItem('alg-theme',name); }catch(e){}
   updateThemeButtons();
 }

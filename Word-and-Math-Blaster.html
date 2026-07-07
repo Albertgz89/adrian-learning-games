@@ -654,10 +654,25 @@ var THEMES = {
   monster:  { name:'Monsters', emoji:'👾', target:'monster',  launcher:'ball',   ship:'#fdd835', accent:'#fdd835', sky:['#5a1140','#1a0a2e'], cheer:['Caught it!','Gotcha!','Super catch!'] },
 };
 var theme='space';
+// Painted world backgrounds (Higgsfield art). If a file is missing (lone HTML
+// file, offline first paint) draw() falls back to the procedural scenery.
+var BG_ART={space:'art/bg-space.jpg',baseball:'art/bg-baseball.jpg',golf:'art/bg-golf.jpg',monster:'art/bg-monster.jpg'};
+var bgImgs={};
+function bgFor(t){
+  const src=BG_ART[t]; if(!src || typeof Image==='undefined') return null;
+  let im=bgImgs[t];
+  if(!im){ try{ im=new Image(); im.onload=function(){ try{ drawOnce(); }catch(e){} }; im.src=src; bgImgs[t]=im; }catch(e){ return null; } }
+  return (im && im.complete && im.naturalWidth>0) ? im : null;
+}
 function applyTheme(name){
   if(!THEMES[name]) name='space';
   theme=name; const t=THEMES[name], r=document.documentElement;
   if(r && r.style){ r.style.setProperty('--accent',t.accent); }
+  try{
+    document.body.style.backgroundImage='linear-gradient(rgba(15,20,55,.62),rgba(15,20,55,.8)), url("art/bg-'+name+'.jpg"), radial-gradient(120% 120% at 50% 0%,#27306b,#0f1d4d 60%,#0a1238)';
+    document.body.style.backgroundSize='cover';
+    document.body.style.backgroundPosition='center';
+  }catch(e){}
   try{ localStorage.setItem('alg-theme',name); }catch(e){}
   updateThemeButtons(); drawOnce();
 }
@@ -1430,18 +1445,26 @@ function draw(){
   const ctx=bCtx; if(!ctx) return;
   ctx.clearRect(0,0,bW,bH);
   const daytime = (theme==='baseball'||theme==='golf');
-  // themed sky
-  let sky; try{ sky=ctx.createLinearGradient(0,0,0,bH); const s=(THEMES[theme]&&THEMES[theme].sky)||['#16225e','#070d2e']; sky.addColorStop(0,s[0]); sky.addColorStop(1,s[1]); ctx.fillStyle=sky; }catch(e){ ctx.fillStyle='#0b1745'; }
-  ctx.fillRect(0,0,bW,bH);
-  if(daytime){ // clouds instead of stars
-    ctx.fillStyle='rgba(255,255,255,.85)';
-    game.stars.forEach((s,i)=>{ if(i%8) return; ctx.beginPath(); ctx.ellipse(s.x,s.y*0.4+8,26,9,0,0,6.2832); ctx.fill(); ctx.beginPath(); ctx.ellipse(s.x+16,s.y*0.4+4,16,7,0,0,6.2832); ctx.fill(); });
+  const bg=bgFor(theme);
+  if(bg){
+    // painted world art, cover-fit
+    const sc=Math.max(bW/bg.naturalWidth,bH/bg.naturalHeight);
+    const dw=bg.naturalWidth*sc, dh=bg.naturalHeight*sc;
+    try{ ctx.drawImage(bg,(bW-dw)/2,(bH-dh)/2,dw,dh); }catch(e){}
   } else {
-    ctx.fillStyle='#ffffff';
-    for(const s of game.stars){ ctx.globalAlpha=0.3; ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,6.2832); ctx.fill(); }
-    ctx.globalAlpha=1;
+    // procedural fallback sky + scenery
+    let sky; try{ sky=ctx.createLinearGradient(0,0,0,bH); const s=(THEMES[theme]&&THEMES[theme].sky)||['#16225e','#070d2e']; sky.addColorStop(0,s[0]); sky.addColorStop(1,s[1]); ctx.fillStyle=sky; }catch(e){ ctx.fillStyle='#0b1745'; }
+    ctx.fillRect(0,0,bW,bH);
+    if(daytime){ // clouds instead of stars
+      ctx.fillStyle='rgba(255,255,255,.85)';
+      game.stars.forEach((s,i)=>{ if(i%8) return; ctx.beginPath(); ctx.ellipse(s.x,s.y*0.4+8,26,9,0,0,6.2832); ctx.fill(); ctx.beginPath(); ctx.ellipse(s.x+16,s.y*0.4+4,16,7,0,0,6.2832); ctx.fill(); });
+    } else {
+      ctx.fillStyle='#ffffff';
+      for(const s of game.stars){ ctx.globalAlpha=0.3; ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,6.2832); ctx.fill(); }
+      ctx.globalAlpha=1;
+    }
+    try{ drawScene(ctx); }catch(e){}
   }
-  try{ drawScene(ctx); }catch(e){}
   // problem — readable on light or dark skies
   ctx.textAlign='center'; ctx.textBaseline='middle';
   ctx.font='bold 24px "Baloo 2", system-ui, sans-serif';
