@@ -283,15 +283,58 @@ function genPhonics(){
 // Calendar World — days, months, seasons, ordering.
 const DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
-function genCalendar(){
-  const kind=rint(5);
-  if(kind===0){ const i=rint(7); return { q:`What day comes after ${DAYS[i]}?`, right:DAYS[(i+1)%7], choices:wordChoices(DAYS[(i+1)%7],DAYS), hint:'Think of the week order.' }; }
-  if(kind===1){ const i=rint(7); return { q:`What day comes before ${DAYS[i]}?`, right:DAYS[(i+6)%7], choices:wordChoices(DAYS[(i+6)%7],DAYS), hint:'One day earlier.' }; }
-  if(kind===2){ const i=rint(12); return { q:`What month comes after ${MONTHS[i]}?`, right:MONTHS[(i+1)%12], choices:wordChoices(MONTHS[(i+1)%12],MONTHS), hint:'Next on the calendar.' }; }
-  if(kind===3){ return { q:`How many days are in one week?`, right:'7', choices:shuffle(['7','5','10','12']), hint:'Count Sunday to Saturday.' }; }
-  const seasons=[{q:'Which season has snow and is cold?',right:'Winter'},{q:'Which season has flowers blooming?',right:'Spring'},{q:'Which season is hot with long sunny days?',right:'Summer'},{q:'Which season has leaves falling?',right:'Fall'}];
-  const s=pick(seasons);
-  return { q:s.q, right:s.right, choices:shuffle(['Winter','Spring','Summer','Fall']), hint:'Think about the weather.' };
+const DAY_ABBR=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+// The week as a strip of day tiles — weekend tinted gold, one day highlighted.
+function dayStripSVG(hi){
+  let g='';
+  for(let i=0;i<7;i++){
+    const x=8+i*70, wknd=(i===0||i===6), on=(i===hi);
+    g+='<rect x="'+x+'" y="14" width="62" height="72" rx="12" fill="'+(on?'#ffd23f':(wknd?'#fff1c9':'#eef2ff'))+'" stroke="'+(on?'#f5a623':'#c9d2ff')+'" stroke-width="'+(on?5:3)+'"/>';
+    g+='<text x="'+(x+31)+'" y="58" text-anchor="middle" font-size="20" font-weight="800" font-family="sans-serif" fill="#22315b">'+DAY_ABBR[i]+'</text>';
+  }
+  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 506 100">'+g+'</svg>';
+}
+
+// A mini month calendar (30 days); offset = weekday of the 1st; date circled (0 = none).
+function monthSVG(offset,date){
+  let g='<rect x="4" y="4" width="368" height="252" rx="16" fill="#ffffff" stroke="#c9d2ff" stroke-width="4"/>';
+  g+='<path d="M4 24 a16 16 0 0 1 16-16 h336 a16 16 0 0 1 16 16 v24 h-368 z" fill="#5b8cff"/>';
+  for(let i=0;i<7;i++) g+='<text x="'+(30+i*50)+'" y="36" text-anchor="middle" font-size="17" font-weight="800" font-family="sans-serif" fill="#ffffff">'+DAY_ABBR[i][0]+'</text>';
+  for(let d=1;d<=30;d++){
+    const idx=offset+d-1, r=Math.floor(idx/7), c=idx%7;
+    const x=30+c*50, y=80+r*35;
+    if(d===date) g+='<circle cx="'+x+'" cy="'+(y-6)+'" r="15" fill="#ffd23f" stroke="#f5a623" stroke-width="3"/>';
+    g+='<text x="'+x+'" y="'+y+'" text-anchor="middle" font-size="15" font-weight="700" font-family="sans-serif" fill="#22315b">'+d+'</text>';
+  }
+  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 376 264">'+g+'</svg>';
+}
+
+const SEASON_ART={Spring:['art/cal-spring.jpg','🌸'],Summer:['art/cal-summer.jpg','☀️'],Fall:['art/cal-fall.jpg','🍂'],Winter:['art/cal-winter.jpg','⛄']};
+function emojiFallback(e){ return svgUri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><text x="128" y="140" font-size="150" text-anchor="middle" dominant-baseline="central">'+e+'</text></svg>'); }
+function ordSuffix(n){ if(n%10===1&&n!==11)return 'st'; if(n%10===2&&n!==12)return 'nd'; if(n%10===3&&n!==13)return 'rd'; return 'th'; }
+
+// Calendar World — leveled: days of the week (order, yesterday/tomorrow, weekend)
+// → months → seasons (with art) → reading a real calendar grid.
+function genCalendar(level){
+  if(level==null) level=rng(1,9);
+  const kind = level<=2 ? rint(4) : level<=4 ? 4+rint(3) : level<=6 ? 7+rint(3) : 10+rint(2);
+  if(kind===0){ const i=rint(7); return { q:'What day comes after '+DAYS[i]+'?', right:DAYS[(i+1)%7], choices:wordChoices(DAYS[(i+1)%7],DAYS), pic:svgUri(dayStripSVG(i)), hint:'Find the gold day, then look right.' }; }
+  if(kind===1){ const i=rint(7); return { q:'What day comes before '+DAYS[i]+'?', right:DAYS[(i+6)%7], choices:wordChoices(DAYS[(i+6)%7],DAYS), pic:svgUri(dayStripSVG(i)), hint:'Find the gold day, then look left.' }; }
+  if(kind===2){ return { q:'How many days are in one week?', right:'7', choices:shuffle(['7','5','10','12']), pic:svgUri(dayStripSVG(-1)), hint:'Count the day boxes!' }; }
+  if(kind===3){ const i=rint(7); const w=(i===0||i===6); return { q:'Is '+DAYS[i]+' a weekend day or a school day?', right:w?'Weekend day':'School day', choices:shuffle(['Weekend day','School day','A month','A season']), pic:svgUri(dayStripSVG(i)), hint:'Weekends are Saturday and Sunday.' }; }
+  if(kind===4){ const i=rint(7); return { q:'Today is '+DAYS[i]+'. What day was yesterday?', right:DAYS[(i+6)%7], choices:wordChoices(DAYS[(i+6)%7],DAYS), pic:svgUri(dayStripSVG(i)), hint:'Yesterday is one day back.' }; }
+  if(kind===5){ const i=rint(7); return { q:'Today is '+DAYS[i]+'. What day is tomorrow?', right:DAYS[(i+1)%7], choices:wordChoices(DAYS[(i+1)%7],DAYS), pic:svgUri(dayStripSVG(i)), hint:'Tomorrow is one day ahead.' }; }
+  if(kind===6){ const i=rint(7); const mid=(i+1)%7; return { q:'Which day comes between '+DAYS[i]+' and '+DAYS[(i+2)%7]+'?', right:DAYS[mid], choices:wordChoices(DAYS[mid],DAYS), pic:svgUri(dayStripSVG(-1)), hint:'It is right in the middle of those two.' }; }
+  if(kind===7){ const i=rint(12); return { q:'What month comes after '+MONTHS[i]+'?', right:MONTHS[(i+1)%12], choices:wordChoices(MONTHS[(i+1)%12],MONTHS), hint:'Next on the calendar.' }; }
+  if(kind===8){ return { q:'How many months are in one year?', right:'12', choices:shuffle(['12','7','10','24']), hint:'January through December.' }; }
+  if(kind===9){ const sn=pick(Object.keys(SEASON_ART));
+    return { q:'Which season does this picture show?', right:sn, choices:shuffle(['Winter','Spring','Summer','Fall']),
+             pic:SEASON_ART[sn][0], picFb:emojiFallback(SEASON_ART[sn][1]), hint:'Look at the trees and the weather.' }; }
+  if(kind===10){ const off=rint(7), d=rng(2,30); const wd=DAYS[(off+d-1)%7];
+    return { q:'Look at the calendar. What day of the week is the '+d+ordSuffix(d)+'?', right:wd, choices:wordChoices(wd,DAYS), pic:svgUri(monthSVG(off,d)), meta:{off:off,date:d}, hint:'Find the gold circle, then look up to its letter.' }; }
+  const off=rint(7); const firstSat=(6-off+7)%7+1;
+  return { q:'Look at the calendar. What is the date of the first Saturday?', right:String(firstSat), choices:numChoices(firstSat), pic:svgUri(monthSVG(off,0)), meta:{off:off,firstSat:firstSat}, hint:'Saturday is the last column.' };
 }
 
 // Shape World
@@ -375,17 +418,21 @@ function genAnimals(){
 function svgUri(svg){ return 'data:image/svg+xml;utf8,'+encodeURIComponent(svg); }
 function fmtTime(h,m){ return h+':'+(m<10?'0'+m:m); }
 function clockSVG(h,m){
-  const cx=128,cy=128,R=112; let ticks='';
-  for(let i=0;i<12;i++){ const a=Math.PI/180*(i*30-90);
-    ticks+=`<line x1="${(cx+Math.cos(a)*(R-9)).toFixed(1)}" y1="${(cy+Math.sin(a)*(R-9)).toFixed(1)}" x2="${(cx+Math.cos(a)*R).toFixed(1)}" y2="${(cy+Math.sin(a)*R).toFixed(1)}" stroke="#1f2a52" stroke-width="4"/>`; }
-  const nums=[[12,0,-R+34],[3,R-28,4],[6,0,R-22],[9,-R+28,4]]
-    .map(([n,dx,dy])=>`<text x="${cx+dx}" y="${cy+dy+4}" text-anchor="middle" font-size="22" font-weight="800" fill="#1f2a52" font-family="sans-serif">${n}</text>`).join('');
+  const cx=128,cy=128,R=100;
+  let ticks='';
+  for(let i=0;i<12;i++){ if(i%3===0) continue; const a=Math.PI/180*(i*30-90);
+    ticks+='<line x1="'+(cx+Math.cos(a)*(R-10)).toFixed(1)+'" y1="'+(cy+Math.sin(a)*(R-10)).toFixed(1)+'" x2="'+(cx+Math.cos(a)*(R-3)).toFixed(1)+'" y2="'+(cy+Math.sin(a)*(R-3)).toFixed(1)+'" stroke="#8fa1d8" stroke-width="4" stroke-linecap="round"/>'; }
+  const nums=[[12,0,-R+30],[3,R-24,8],[6,0,R-14],[9,-R+24,8]]
+    .map(([n,dx,dy])=>'<text x="'+(cx+dx)+'" y="'+(cy+dy)+'" text-anchor="middle" font-size="27" font-weight="800" fill="#22315b" font-family="sans-serif">'+n+'</text>').join('');
   const ha=Math.PI/180*((h%12)*30+m*0.5-90), ma=Math.PI/180*(m*6-90);
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">`
-    +`<circle cx="${cx}" cy="${cy}" r="${R}" fill="#fff" stroke="#1f2a52" stroke-width="6"/>${ticks}${nums}`
-    +`<line x1="${cx}" y1="${cy}" x2="${(cx+Math.cos(ha)*R*0.5).toFixed(1)}" y2="${(cy+Math.sin(ha)*R*0.5).toFixed(1)}" stroke="#1f2a52" stroke-width="9" stroke-linecap="round"/>`
-    +`<line x1="${cx}" y1="${cy}" x2="${(cx+Math.cos(ma)*R*0.8).toFixed(1)}" y2="${(cy+Math.sin(ma)*R*0.8).toFixed(1)}" stroke="#ff5c7a" stroke-width="5" stroke-linecap="round"/>`
-    +`<circle cx="${cx}" cy="${cy}" r="7" fill="#1f2a52"/></svg>`;
+  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">'
+    +'<circle cx="'+cx+'" cy="'+(cy+4)+'" r="'+(R+16)+'" fill="rgba(20,30,80,.12)"/>'
+    +'<circle cx="'+cx+'" cy="'+cy+'" r="'+(R+14)+'" fill="#5b8cff"/>'
+    +'<circle cx="'+cx+'" cy="'+cy+'" r="'+(R+5)+'" fill="#fffdf5"/>'
+    +ticks+nums
+    +'<line x1="'+cx+'" y1="'+cy+'" x2="'+(cx+Math.cos(ha)*R*0.48).toFixed(1)+'" y2="'+(cy+Math.sin(ha)*R*0.48).toFixed(1)+'" stroke="#22315b" stroke-width="11" stroke-linecap="round"/>'
+    +'<line x1="'+cx+'" y1="'+cy+'" x2="'+(cx+Math.cos(ma)*R*0.74).toFixed(1)+'" y2="'+(cy+Math.sin(ma)*R*0.74).toFixed(1)+'" stroke="#ff5c7a" stroke-width="7" stroke-linecap="round"/>'
+    +'<circle cx="'+cx+'" cy="'+cy+'" r="9" fill="#ffd23f" stroke="#f5a623" stroke-width="3"/></svg>';
 }
 function timeChoices(h,m,level){
   const right=fmtTime(h,m); const set=new Set([right]);
@@ -400,8 +447,21 @@ function timeChoices(h,m,level){
 }
 function genTime(level){
   if(level==null) level=rng(1,9);
+  if(level<=2 && rint(10)<3){ // time of day from a picture
+    const night=rint(2);
+    return { q:'Look at the picture. Is it morning or night?', right:night?'Night':'Morning',
+             choices:shuffle(['Morning','Night','Afternoon','Lunchtime']),
+             pic:night?'art/cal-night.jpg':'art/cal-morning.jpg', picFb:emojiFallback(night?'🌙':'🌅'),
+             hint:'A sunrise means morning; stars mean night.' };
+  }
   const h=rng(1,12);
   const m = level<=1?0 : level<=2?pick([0,30]) : level<=4?pick([0,15,30,45]) : rint(12)*5;
+  if(level>=7 && rint(10)<4){ // elapsed time: read the clock, add one hour
+    const h2=(h%12)+1;
+    return { q:'What time will the clock show in 1 hour?', right:fmtTime(h2,m),
+             choices:timeChoices(h2,m,level), pic:svgUri(clockSVG(h,m)), meta:{h:h,m:m},
+             hint:'Read the clock, then move the hour hand one number.' };
+  }
   return { q:'What time does the clock show?', right:fmtTime(h,m),
            choices:timeChoices(h,m,level), pic:svgUri(clockSVG(h,m)),
            hint:'Short hand points to the hour, long hand to the minutes.' };
@@ -1090,7 +1150,11 @@ function renderQuestion(){
   const pic=$('qpic');
   if(pic){
     pic.innerHTML='';
-    if(q.pic){ const img=document.createElement('img'); img.className='qimg'; img.src=q.pic; img.alt=''; pic.appendChild(img); }
+    if(q.pic){
+      const img=document.createElement('img'); img.className='qimg'; img.alt='';
+      if(q.picFb){ img.onerror=function(){ img.onerror=null; img.src=q.picFb; }; }
+      img.src=q.pic; pic.appendChild(img);
+    }
     if(q.replay){ // listen-first questions get a big replay button
       const rb=document.createElement('button');
       rb.type='button'; rb.className='themebtn'; rb.style.fontSize='22px'; rb.style.padding='14px 22px';

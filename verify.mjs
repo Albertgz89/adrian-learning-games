@@ -87,12 +87,40 @@ try {
   let timeOk = true, moneyOk = true;
   for (let lvl = 1; lvl <= 9; lvl++) for (let i = 0; i < 150; i++) {
     const t = w.__gt(lvl), L = t.choices;
-    if (!t.q || L.indexOf(t.right) < 0 || new Set(L).size !== L.length || !/^data:image\//.test(t.pic || '')) timeOk = false;
+    if (!t.q || L.indexOf(t.right) < 0 || new Set(L).size !== L.length || !/^(data:image\/|art\/)/.test(t.pic || '')) timeOk = false;
     const mo = w.__go(lvl), M = mo.choices;
     if (!mo.q || M.indexOf(mo.right) < 0 || new Set(M).size !== M.length || !/^data:image\//.test(mo.pic || '')) moneyOk = false;
   }
   ok(timeOk, 'Time World: clock question with answer among 4 unique choices + clock image');
   ok(moneyOk, 'Money World: coin question with answer among 4 unique choices + coin image');
+
+  // ---- Time & Calendar revamp ----
+  // Calendar is leveled and always answerable with a picture where promised.
+  let calOk = true, sawStrip = false, sawYesterday = false, sawSeasonArt = false, sawWeekend = false;
+  let gridRight = true, sawGrid = false, satRight = true, sawSat = false;
+  for (let lvl = 1; lvl <= 9; lvl++) for (let i = 0; i < 200; i++) {
+    const c = w.__gc(lvl);
+    if (!c.q || c.choices.indexOf(c.right) < 0 || new Set(c.choices).size !== c.choices.length) calOk = false;
+    if ((c.pic || '').indexOf('data:image') === 0 && /day comes|days are in|weekend|yesterday|tomorrow/.test(c.q)) sawStrip = true;
+    if (/yesterday/.test(c.q)) sawYesterday = true;
+    if (/weekend day or a school day/.test(c.q)) sawWeekend = true;
+    if (/season does this picture/.test(c.q)) { if (/^art\/cal-/.test(c.pic) && c.picFb) sawSeasonArt = true; else calOk = false; }
+    if (c.meta && c.meta.date) { sawGrid = true; const wd = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][(c.meta.off + c.meta.date - 1) % 7]; if (wd !== c.right) gridRight = false; }
+    if (c.meta && c.meta.firstSat) { sawSat = true; if (String((6 - c.meta.off + 7) % 7 + 1) !== c.right) satRight = false; }
+  }
+  ok(calOk, 'Calendar: every question at every level is answerable with unique choices');
+  ok(sawStrip && sawYesterday && sawWeekend, 'Calendar: days-of-week strip visuals + yesterday/tomorrow + weekend questions appear');
+  ok(sawSeasonArt, 'Calendar: season questions show generated art with a fallback');
+  ok(sawGrid && gridRight && sawSat && satRight, 'Calendar: month-grid questions compute the correct weekday and first-Saturday date');
+  // Time: morning/night picture questions at low levels; +1 hour questions at high levels are mathematically right.
+  let sawMorning = false, elapsedOk = true, sawElapsed = false;
+  for (let i = 0; i < 300; i++) { const t = w.__gt(1); if (/morning or night/.test(t.q) && /^art\/cal-/.test(t.pic) && t.picFb) sawMorning = true; }
+  for (let i = 0; i < 300; i++) {
+    const t = w.__gt(8);
+    if (t.meta && /in 1 hour/.test(t.q)) { sawElapsed = true; const h2 = (t.meta.h % 12) + 1; if (t.right !== h2 + ':' + (t.meta.m < 10 ? '0' + t.meta.m : t.meta.m)) elapsedOk = false; }
+  }
+  ok(sawMorning, 'Time: morning/night picture questions appear at low levels');
+  ok(sawElapsed && elapsedOk, 'Time: "in 1 hour" questions appear at high levels with the correct answer');
 
   // Adaptive difficulty: a streak of correct answers raises the level; a miss lowers it.
   w.eval('window.__setLevel=setLevel; window.__getLevel=getLevel;');
