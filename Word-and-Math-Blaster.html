@@ -105,9 +105,25 @@
   .big:active{transform:translateY(5px);box-shadow:0 2px 0 #d9531c}
   .feedback{text-align:center;font-weight:800;font-size:22px;min-height:1.3em;margin-top:12px}
   .home{color:#cdd6ff;text-align:center;margin-top:18px;font-size:15px}
+
+  /* Sentence Builder */
+  #wText{width:100%;font-family:inherit;font-size:clamp(20px,5vw,26px);font-weight:700;color:#22315b;
+    border:3px solid #e3e8ff;border-radius:18px;padding:14px 16px;outline:none;resize:none;line-height:1.5;background:#fbfcff}
+  #wText:focus{border-color:#5b8cff}
+  #wChecks{list-style:none;margin:12px 0 0;padding:0}
+  #wChecks li{font-weight:800;font-size:15px;color:#9aa5c8;padding:5px 0 5px 30px;position:relative}
+  #wChecks li::before{content:'○';position:absolute;left:4px}
+  #wChecks li.met{color:#0e8c50}
+  #wChecks li.met::before{content:'✅'}
+  #wPic{font-size:clamp(56px,14vw,90px);text-align:center;line-height:1;margin:4px 0}
+  #homeBtn{position:fixed;left:10px;top:10px;z-index:90;text-decoration:none;font-family:inherit;
+    background:#fff;border-radius:999px;padding:8px 12px;font-weight:800;font-size:15px;color:#22315b;
+    box-shadow:0 6px 18px rgba(0,0,0,.3)}
 </style>
 </head>
 <body>
+<a id="homeBtn" href="index.html">🏠 Games</a>
+
 <div class="wrap">
   <h1>🚀 Word &amp; Math Blaster</h1>
   <p class="sub">Pick a game and blast off!</p>
@@ -168,6 +184,26 @@
     </div>
     <div class="feedback" id="gFeedback"></div>
     <button class="big" id="gNew">New Wave ➡</button>
+  </section>
+
+  <!-- Sentence Builder -->
+  <section id="writerPanel" class="panel">
+    <div class="ptitle">
+      <h2>✍️ Sentence Builder</h2>
+      <span class="pill" id="wLvl">Lvl 1</span>
+      <span class="pill gold" id="wStars">⭐ 0</span>
+    </div>
+    <div class="prompt" id="wPrompt">Write a sentence about…</div>
+    <div id="wPic"></div>
+    <textarea id="wText" rows="3" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Type your sentence here…"></textarea>
+    <ul id="wChecks"></ul>
+    <div class="cueRow" style="margin-top:10px">
+      <button class="cueBtn" id="wHearPrompt" type="button">🔊 Say the prompt</button>
+      <button class="cueBtn" id="wHear" type="button">🗣️ Read my sentence</button>
+      <button class="cueBtn" id="wSkip" type="button">Next prompt ➡</button>
+    </div>
+    <div class="feedback" id="wFeedback"></div>
+    <button class="big" id="wDone">✔ I wrote it!</button>
   </section>
 
   <p class="home">Made for Adrian • everything saves on this device</p>
@@ -877,6 +913,7 @@ var REPORT = {
     HFW: { sub:'reading', name:'High-Frequency Words' },
     VOC: { sub:'reading', name:'Vocabulary' },
     COMP:{ sub:'reading', name:'Comprehension' },
+    WRIT:{ sub:'reading', name:'Writing' },
   },
   // Can Do / Next Steps by level band (1-3 / 4-6 / 7-9), CA Common Core K-1 aligned.
   SKILLS: {
@@ -904,6 +941,9 @@ var REPORT = {
     VOC: [['name colors, animals and everyday things','describing words and categories'],
           ['use everyday describing words','words about time, feelings and places'],
           ['use a rich set of everyday words','multiple-meaning and academic words']],
+    WRIT:[['write simple words','a full sentence with a capital and a period'],
+          ['write one clear sentence','adding describing words and details'],
+          ['write detailed sentences','two sentences that go together']],
     COMP:[['listen to and echo-read short sentences','reading simple sentences alone'],
           ['read short sentences independently','longer sentences and "who/what" questions'],
           ['read and understand longer sentences','short stories and retelling']],
@@ -1439,17 +1479,122 @@ function renderLives(){ const el=$('gLives'); if(el) el.textContent = game.lives
 function renderScore(){ const el=$('gScore'); if(el) el.textContent='⭐ '+game.score; }
 
 /* ===========================================================================
+   Sentence Builder — write about a prompt; a live checklist teaches sentence
+   conventions (capital letter, end punctuation, length, topic). Adaptive:
+   3 clean sentences level up; levels raise the bar (more words, topic word
+   required, then two sentences). Writing is logged to the WRIT report domain
+   and saved to alg-writing so grown-ups can read past sentences.
+   =========================================================================== */
+var writer = { prompt:null, stars:0, streak:0 };
+var WRITE_PROMPTS=[
+  ['a big dog','🐶'],['your favorite food','🍕'],['a fast rocket','🚀'],['a rainy day','🌧️'],
+  ['a silly monster','👾'],['a baseball game','⚾'],['the beach','🏖️'],['a birthday party','🎂'],
+  ['your family','👨‍👩‍👦'],['a big truck','🚚'],['a sleepy cat','🐱'],['the moon','🌙'],
+  ['a funny frog','🐸'],['your school','🏫'],['a golf ball','⛳'],['a dinosaur','🦖'],
+  ['ice cream','🍦'],['a robot','🤖'],['a rainbow','🌈'],['a race car','🏎️'],
+  ['a pirate ship','🏴‍☠️'],['a snowman','⛄'],['your shoes','👟'],['a butterfly','🦋']
+];
+var recentWrite=[];
+function writeLevel(){ let v=NaN; try{ v=parseInt(localStorage.getItem('wmb-write-lvl'),10); }catch(e){} return (v>=1&&v<=9)?v:1; }
+function saveWriteLevel(l){ try{ localStorage.setItem('wmb-write-lvl',String(Math.max(1,Math.min(9,l)))); }catch(e){} }
+function writeRules(lvl){ return { minWords: lvl<=3?3 : lvl<=6?5 : 8, needTopic: lvl>=4, sentences: lvl>=7?2:1 }; }
+// Pure checker — also exercised directly by verify.mjs.
+function checkWriting(text, lvl, topic){
+  const t=(text||'').trim();
+  const rules=writeRules(lvl);
+  const wordsN=t.split(/\s+/).filter(x=>/[a-z0-9]/i.test(x)).length;
+  const caps=/^[A-Z]/.test(t);
+  const endings=(t.match(/[.!?]/g)||[]).length;
+  const punct=/[.!?]["')\]]*\s*$/.test(t) && endings>=rules.sentences;
+  const topicWords=(topic||'').toLowerCase().split(/\s+/).filter(w=>w.length>2);
+  const hasTopic=!rules.needTopic || !topicWords.length || topicWords.some(w=>t.toLowerCase().indexOf(w)>=0);
+  const enough=wordsN>=rules.minWords;
+  return { caps:caps, punct:punct, enough:enough, hasTopic:hasTopic, wordsN:wordsN, rules:rules,
+           ok:(caps&&punct&&enough&&hasTopic) };
+}
+function startWriter(){
+  writer={ prompt:null, stars:writer.stars||0, streak:0 };
+  loadPrompt();
+}
+function loadPrompt(){
+  let p=pick(WRITE_PROMPTS), g=0;
+  while(recentWrite.indexOf(p[0])>=0 && g++<30) p=pick(WRITE_PROMPTS);
+  recentWrite.push(p[0]); if(recentWrite.length>10) recentWrite.shift();
+  writer.prompt=p;
+  const lvl=writeLevel(), rules=writeRules(lvl);
+  const pr=$('wPrompt');
+  if(pr) pr.textContent='Write '+(rules.sentences>1?'two sentences':'a sentence')+' about '+p[0]+'!';
+  const pic=$('wPic'); if(pic) pic.textContent=p[1];
+  const tx=$('wText'); if(tx){ tx.value=''; }
+  const fb=$('wFeedback'); if(fb) fb.textContent='';
+  const lp=$('wLvl'); if(lp) lp.textContent='Lvl '+lvl;
+  const st=$('wStars'); if(st) st.textContent='⭐ '+writer.stars;
+  updateChecklist();
+  say('Write '+(rules.sentences>1?'two sentences':'a sentence')+' about '+p[0]);
+}
+function updateChecklist(){
+  const ul=$('wChecks'); if(!ul || !writer.prompt) return;
+  const lvl=writeLevel();
+  const c=checkWriting(($('wText')||{}).value, lvl, writer.prompt[0]);
+  const items=[
+    ['caps','Starts with a CAPITAL letter'],
+    ['punct', c.rules.sentences>1 ? 'Has 2 sentences ending with . ! or ?' : 'Ends with . ! or ?'],
+    ['enough','Has at least '+c.rules.minWords+' words ('+c.wordsN+' so far)'],
+  ];
+  if(c.rules.needTopic) items.push(['hasTopic','Talks about '+writer.prompt[0]]);
+  ul.innerHTML='';
+  for(const [k,label] of items){
+    const li=document.createElement('li');
+    li.textContent=label; if(c[k]) li.className='met';
+    ul.appendChild(li);
+  }
+  return c;
+}
+function submitWriting(){
+  if(!writer.prompt) return;
+  const tx=$('wText'); const text=(tx&&tx.value)||'';
+  const lvl=writeLevel();
+  const c=checkWriting(text, lvl, writer.prompt[0]);
+  const fb=$('wFeedback');
+  if(!text.trim()){ if(fb){ fb.textContent='Type your sentence first! ✍️'; fb.style.color='var(--muted)'; } return; }
+  if(c.ok){
+    REPORT.log('WRIT', true);
+    writer.stars++; COLLECT.addStar(); SFX.play('correct');
+    try{
+      const log=JSON.parse(localStorage.getItem('alg-writing')||'[]');
+      log.push({t:Date.now(), prompt:writer.prompt[0], text:text.trim(), lvl:lvl});
+      localStorage.setItem('alg-writing', JSON.stringify(log.slice(-30)));
+    }catch(e){}
+    let up=false;
+    writer.streak++; if(writer.streak>=3 && lvl<9){ saveWriteLevel(lvl+1); writer.streak=0; up=true; SFX.play('levelup'); }
+    if(fb){ fb.textContent=(up?'⬆️ Level up! ':'🎉 ')+'Wonderful writing!'; fb.style.color='var(--good)'; }
+    say((up?'Level up! ':'')+'Wonderful writing! You wrote: '+text.trim(),{rate:0.95});
+    setTimeout(loadPrompt, 1800);
+  } else {
+    REPORT.log('WRIT', false);
+    writer.streak=0;
+    const tip=!c.caps ? 'Start with a capital letter!'
+            : !c.punct ? (c.rules.sentences>1?'You need two sentences — end each with . ! or ?':'End your sentence with . ! or ?')
+            : !c.enough ? 'Add more words — at least '+c.rules.minWords+'!'
+            : 'Make sure it talks about '+writer.prompt[0]+'!';
+    if(fb){ fb.textContent='Almost! '+tip; fb.style.color='var(--bad)'; }
+    say('Almost there! '+tip);
+  }
+}
+
+/* ===========================================================================
    Menu / navigation
    =========================================================================== */
 var MENU = [
   { label:'🔤 Word Builder Lab', panel:'builderPanel', start:startBuilder },
   { label:'📖 Read It Yourself', panel:'readerPanel', start:startReader },
   { label:'☄️ Math Blaster',     panel:'blasterPanel', start:startBlaster },
+  { label:'✍️ Sentence Builder', panel:'writerPanel',  start:startWriter },
 ];
 
 function openMode(i){
   const m=MENU[i];
-  ['builderPanel','readerPanel','blasterPanel'].forEach(id=>{ const el=$(id); if(el) el.classList.toggle('on', id===m.panel); });
+  ['builderPanel','readerPanel','blasterPanel','writerPanel'].forEach(id=>{ const el=$(id); if(el) el.classList.toggle('on', id===m.panel); });
   const btns=[...document.querySelectorAll('#menu .btn')];
   btns.forEach((b,bi)=>b.classList.toggle('active', bi===i));
   if(m.panel!=='blasterPanel') game.running=false;  // pause the shooter when we leave it
@@ -1475,6 +1620,12 @@ function blasterOpen(){ const el=$('blasterPanel'); return !!(el && el.classList
   const rDone=$('rDone'); if(rDone) rDone.addEventListener('click',iReadIt);
   const gNew=$('gNew'); if(gNew) gNew.addEventListener('click',()=>{ if(game.lives<=0) startBlaster(); else newWave(); });
   const gSay=$('gSay'); if(gSay) gSay.addEventListener('click',()=>{ if(game.say) say(game.say,{rate:0.9}); });
+  // sentence builder
+  const wT=$('wText'); if(wT) wT.addEventListener('input',updateChecklist);
+  const wD=$('wDone'); if(wD) wD.addEventListener('click',submitWriting);
+  const wS=$('wSkip'); if(wS) wS.addEventListener('click',loadPrompt);
+  const wH=$('wHear'); if(wH) wH.addEventListener('click',()=>{ const t=($('wText')||{}).value||''; if(t.trim()) say(t.trim(),{rate:0.9}); });
+  const wHP=$('wHearPrompt'); if(wHP) wHP.addEventListener('click',()=>{ if(writer.prompt) say('Write about '+writer.prompt[0]); });
 
   // ----- Math Blaster controls -----
   const canvas=$('bCanvas');

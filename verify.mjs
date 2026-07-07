@@ -229,6 +229,7 @@ try {
   let sayOk = !!sayBtn;
   try { if (sayBtn) sayBtn.click(); } catch (e) { sayOk = false; }
   ok(sayOk, 'Quest: 🔊 "Say it again" button repeats the question');
+  ok(!!w.document.querySelector('#homeBtn[href="index.html"]'), 'Quest: 🏠 Games button links back to the launcher');
 } catch (e) { ok(false, 'Quest threw: ' + e.message); }
 
 // ============================ Word-and-Math-Blaster.html ============================
@@ -414,6 +415,35 @@ try {
   let gSayOk = !!gSay && typeof B.game.say === 'string' && /minus|plus/.test(B.game.say);
   try { if (gSay) gSay.click(); } catch (e) { gSayOk = false; }
   ok(gSayOk, 'Math Blaster: problem is spoken as plus/minus with a 🔊 repeat button (' + (B.game.say || 'none') + ')');
+
+  // Home navigation + Sentence Builder
+  ok(!!w.document.querySelector('#homeBtn[href="index.html"]'), 'Blaster: 🏠 Games button links back to the launcher');
+  const menuBtns = [...w.document.querySelectorAll('#menu .btn')];
+  const wBtn = menuBtns.find(b => /Sentence Builder/.test(b.textContent));
+  ok(menuBtns.length === 4 && !!wBtn, 'menu has 4 games including ✍️ Sentence Builder');
+  wBtn.click();
+  ok(w.document.getElementById('writerPanel').classList.contains('on') && !!w.eval('writer.prompt'),
+     'Sentence Builder opens with a prompt and picture');
+  // checker rules (unit-level)
+  w.eval('window.__cw = checkWriting;');
+  const cwOk =
+    !w.__cw('the dog runs.', 1, 'a big dog').ok &&            // no capital
+    !w.__cw('The dog runs', 1, 'a big dog').ok &&             // no end punctuation
+    !w.__cw('Dog.', 1, 'a big dog').ok &&                     // too short
+     w.__cw('The dog runs fast.', 1, 'a big dog').ok &&       // valid at level 1
+    !w.__cw('My pet is very happy.', 4, 'a big dog').ok &&    // level 4 requires the topic word
+     w.__cw('My big dog is very happy.', 4, 'a big dog').ok &&
+    !w.__cw('My dog is big and happy today.', 7, 'a big dog').ok && // level 7 needs two sentences
+     w.__cw('My dog is big. He likes to run and play!', 7, 'a big dog').ok;
+  ok(cwOk, 'writing checker: capital, punctuation, length, topic and two-sentence rules all enforce');
+  // submit flow: a good sentence earns a star and logs to the Writing domain
+  w.eval('localStorage.setItem("wmb-write-lvl","1");');
+  const wStars = w.__CO.stars();
+  w.document.getElementById('wText').value = 'The big dog runs fast.';
+  w.document.getElementById('wDone').click();
+  const writData = (w.__R.data().dom || {}).WRIT;
+  ok(w.__CO.stars() === wStars + 1 && writData && writData.c >= 1,
+     'a good sentence earns a star and logs to the Writing report domain');
 } catch (e) { ok(false, 'Blaster threw: ' + e.message); }
 
 // ============================ summary ============================
