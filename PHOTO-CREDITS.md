@@ -20,3 +20,6 @@ Real US coin obverse photos, public domain (US Mint coinage imagery / Wikimedia 
 - **nickel** — Jefferson nickel obverse (uncirculated) · commons.wikimedia.org
 - **dime** — Roosevelt dime obverse (2013 proof) · commons.wikimedia.org
 - **quarter** — 1994-P Washington quarter obverse · commons.wikimedia.org
+
+## Monster Friends collection art
+Original characters generated with Higgsfield AI (Recraft V4.1) for this app, July 2026 — files art/monster-0..9.jpg.

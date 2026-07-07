@@ -1,6 +1,6 @@
 // Service worker — makes the games installable and fully playable offline.
 // Bump CACHE_VERSION whenever any game file changes so iPads pick up updates.
-const CACHE_VERSION = 'adrian-games-v6';
+const CACHE_VERSION = 'adrian-games-v7';
 const ASSETS = [
   './',
   './index.html',
@@ -10,6 +10,9 @@ const ASSETS = [
   './icon-192.png',
   './icon-512.png',
   './icon-180.png',
+  // monster collection art (offline-ready)
+  './art/monster-0.jpg','./art/monster-1.jpg','./art/monster-2.jpg','./art/monster-3.jpg','./art/monster-4.jpg',
+  './art/monster-5.jpg','./art/monster-6.jpg','./art/monster-7.jpg','./art/monster-8.jpg','./art/monster-9.jpg',
 ];
 
 self.addEventListener('install', (e) => {

@@ -635,6 +635,9 @@ var COLLECT = {
       +'<text x="128" y="128" font-size="118" text-anchor="middle" dominant-baseline="central">'+emo+'</text></svg>';
   },
   _uri(svg){ return 'data:image/svg+xml;utf8,'+encodeURIComponent(svg); },
+  // Generated character art (art/ folder, Higgsfield); SVG art is the fallback
+  // via data-fb + onerror so the collection still works from a lone HTML file.
+  itemArt(set,i){ return set==='monster' ? 'art/monster-'+i+'.jpg' : this._uri(this.itemSVG(set,i)); },
   ensureUI(){
     if(document.getElementById('colBtn')) return;
     const st=document.createElement('style');
@@ -690,14 +693,16 @@ var COLLECT = {
       html+='<h3>'+s.title+' ('+own.length+'/10)</h3><div class="colGrid">';
       for(let i=0;i<10;i++){
         const have=own.indexOf(i)>=0;
-        const art=have?this._uri(this.itemSVG(set,i))
+        const art=have?this.itemArt(set,i)
                       :this._uri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><rect x="14" y="14" width="228" height="228" rx="30" fill="#e8ecfb"/><text x="128" y="128" font-size="110" text-anchor="middle" dominant-baseline="central" fill="#b9c3e8">?</text></svg>');
-        html+='<div class="colItem'+(have?'':' lock')+'"><img alt="" src="'+art+'"><div>'+(have?s.names[i]:'???')+'</div></div>';
+        const fb=have?(' data-fb="'+this._uri(this.itemSVG(set,i))+'"'):'';
+        html+='<div class="colItem'+(have?'':' lock')+'"><img alt=""'+fb+' src="'+art+'"><div>'+(have?s.names[i]:'???')+'</div></div>';
       }
       html+='</div>';
     }
     html+='</div>';
     book.innerHTML=html; book.classList.add('on');
+    [...book.querySelectorAll('img[data-fb]')].forEach(img=>{ img.onerror=()=>{ img.onerror=null; img.src=img.dataset.fb; }; });
     const x=document.getElementById('colX'); if(x) x.addEventListener('click',()=>this.hideBook());
     const snd=document.getElementById('colSnd');
     if(snd) snd.addEventListener('click',()=>{ SFX.toggle(); snd.textContent=SFX.on?'🔊 Sounds ON':'🔇 Sounds OFF'; if(SFX.on) SFX.play('correct'); });
@@ -708,10 +713,11 @@ var COLLECT = {
     const party=document.getElementById('colParty'); if(!party) return;
     const name=this.SETS[u.set].names[u.i];
     party.innerHTML='<div class="colCard"><div class="newb">✨ NEW PRIZE UNLOCKED ✨</div>'
-      +'<img alt="" src="'+this._uri(this.itemSVG(u.set,u.i))+'">'
+      +'<img alt="" data-fb="'+this._uri(this.itemSVG(u.set,u.i))+'" src="'+this.itemArt(u.set,u.i)+'">'
       +'<div class="nm">'+name+'</div>'
       +'<button id="colGo" type="button">Awesome! ➡</button></div>';
     party.classList.add('on');
+    [...party.querySelectorAll('img[data-fb]')].forEach(img=>{ img.onerror=()=>{ img.onerror=null; img.src=img.dataset.fb; }; });
     if(this.onPause){ try{ this.onPause(); }catch(e){} }
     SFX.play('fanfare');
     try{ if(typeof burst==='function') burst(); }catch(e){}
