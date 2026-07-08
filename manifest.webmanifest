@@ -1,15 +1,24 @@
 {
-  "name": "Adrian's Learning Games",
-  "short_name": "Adrian Learns",
-  "description": "Two learning games for Adrian: Learning Quest and Word & Math Blaster.",
+  "name": "Adrian's Learning Galaxy",
+  "short_name": "Learning Galaxy",
+  "description": "Adrian's Learning Galaxy: explore 9 planets of numbers, reading, time and money.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#5b8cff",
-  "theme_color": "#5b8cff",
+  "background_color": "#1a1040",
+  "theme_color": "#1a1040",
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
   ]
 }

@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Adrian's Learning Games</title>
+<title>Adrian's Learning Galaxy</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Adrian Learns">
+<meta name="apple-mobile-web-app-title" content="Learning Galaxy">
 <meta name="theme-color" content="#1a1040">
 <style>
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -27,13 +27,19 @@
 
   /* floating world planets */
   .planet{
-    position:fixed;z-index:1;border-radius:50%;overflow:visible;cursor:pointer;padding:0;border:3px solid rgba(255,255,255,.75);
-    width:var(--s);height:var(--s);box-shadow:0 0 22px rgba(150,120,255,.55), 0 8px 24px rgba(0,0,0,.45);
+    position:fixed;z-index:1;border-radius:50%;overflow:visible;cursor:pointer;padding:0;border:2px solid rgba(255,255,255,.35);
+    width:var(--s);height:var(--s);box-shadow:0 0 30px rgba(150,120,255,.7), 0 8px 24px rgba(0,0,0,.5);
     animation:bob var(--d) ease-in-out infinite;background:#3a2f77;
     transition:transform .15s;
   }
   .planet:active{transform:scale(.9)}
   .planet img{width:100%;height:100%;object-fit:cover;display:block;border-radius:50%}
+  .planet::before{content:'';position:absolute;inset:0;border-radius:50%;z-index:2;pointer-events:none;
+    background:radial-gradient(circle at 30% 24%, rgba(255,255,255,.5), rgba(255,255,255,0) 40%),
+               radial-gradient(circle at 62% 58%, rgba(8,4,35,0) 46%, rgba(8,4,35,.42) 76%, rgba(4,2,22,.72) 100%)}
+  .planet .ring{position:absolute;left:50%;top:50%;width:160%;height:46%;transform:translate(-50%,-50%) rotate(-16deg);
+    border:3px solid rgba(255,255,255,.4);border-radius:50%;pointer-events:none;z-index:3;
+    box-shadow:0 0 10px rgba(180,160,255,.35), inset 0 0 8px rgba(180,160,255,.3)}
   .planet .pl{position:absolute;left:50%;bottom:-11px;transform:translateX(-50%);background:rgba(12,8,40,.85);color:#fff;
     font-size:10px;font-weight:800;border-radius:999px;padding:2px 9px;white-space:nowrap;pointer-events:none;
     box-shadow:0 2px 6px rgba(0,0,0,.4)}
@@ -41,8 +47,9 @@
   @media (max-width:700px){ .planet.hideS{display:none} }
 
   .wrap{width:min(560px,100%);text-align:center;position:relative;z-index:2}
-  .hero{width:min(74%,340px);border-radius:26px;box-shadow:0 0 34px rgba(160,120,255,.5), 0 18px 40px rgba(0,0,0,.5);
-    animation:bob 7s ease-in-out infinite}
+  .pilot{width:min(58%,250px);filter:drop-shadow(0 0 26px rgba(160,120,255,.65)) drop-shadow(0 14px 24px rgba(0,0,0,.5));
+    animation:fly 6s ease-in-out infinite}
+  @keyframes fly{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-16px) rotate(4deg)}}
   h1{color:#fff;font-size:clamp(30px,8vw,54px);margin:.25em 0 .05em;line-height:1.05;
     text-shadow:0 0 18px rgba(160,130,255,.9), 0 3px 0 rgba(0,0,0,.35)}
   p.sub{color:#cfd4ff;font-size:18px;margin:4px 0 20px;font-weight:700;text-shadow:0 1px 4px rgba(0,0,0,.5)}
@@ -63,8 +70,8 @@
 <div id="shade"></div>
 
 <div class="wrap">
-  <img class="hero" src="art/hero.jpg" alt="" onerror="this.onerror=null;this.src='icon-192.png'">
-  <h1>Adrian's Learning Games</h1>
+  <img class="pilot" src="art/rocket-boy.png" alt="" onerror="this.remove()">
+  <h1>Adrian's Learning Galaxy</h1>
   <p class="sub">Tap a floating world — or pick a game! 🚀</p>
 
   <a class="game" href="Adrians-Learning-Quest.html">
@@ -91,18 +98,18 @@
 
   // ---- floating world planets (tap to fly straight into that world) ----
   const WORLDS=[
-    ['numbers','Numbers',   6, 12, 86, 1],
+    ['numbers','Numbers',   6, 12, 86, 1, 1],
     ['phonics','Phonics',  86, 10, 78, 1],
     ['time','Time',         3, 38, 72, 0],
     ['money','Money',      90, 36, 80, 0],
     ['calendar','Calendar', 5, 64, 70, 1],
-    ['shapes','Shapes',    89, 62, 74, 1],
+    ['shapes','Shapes',    89, 62, 74, 1, 1],
     ['colors','Colors',    12, 86, 64, 0],
-    ['words','Words',      74, 88, 62, 0],
+    ['words','Words',      74, 88, 62, 0, 1],
     ['animals','Animals',  44,  6, 66, 1],
   ];
   const planets=[];
-  WORLDS.forEach(([key,label,x,y,size,hideSmall],i)=>{
+  WORLDS.forEach(([key,label,x,y,size,hideSmall,ring],i)=>{
     const b=document.createElement('button');
     b.className='planet'+(hideSmall?' hideS':''); b.type='button'; b.title=label+' World';
     b.style.cssText='left:calc('+x+'vw - '+(size/2)+'px);top:calc('+y+'vh - '+(size/2)+'px);--s:'+size+'px;--d:'+(5+Math.random()*4).toFixed(1)+'s;animation-delay:'+(Math.random()*4).toFixed(1)+'s';
@@ -110,7 +117,9 @@
     img.onerror=function(){ b.remove(); };
     img.src='art/world-'+key+'.jpg';
     const pl=document.createElement('span'); pl.className='pl'; pl.textContent=label;
-    b.appendChild(img); b.appendChild(pl);
+    b.appendChild(img);
+    if(ring){ const rg=document.createElement('span'); rg.className='ring'; b.appendChild(rg); }
+    b.appendChild(pl);
     b.addEventListener('click',()=>{ location.href='Adrians-Learning-Quest.html?world='+key; });
     document.body.appendChild(b);
     planets.push({el:b, depth:0.4+(i%3)*0.3});

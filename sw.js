@@ -1,6 +1,6 @@
 // Service worker — makes the games installable and fully playable offline.
 // Bump CACHE_VERSION whenever any game file changes so iPads pick up updates.
-const CACHE_VERSION = 'adrian-games-v13';
+const CACHE_VERSION = 'adrian-games-v14';
 const ASSETS = [
   './',
   './index.html',
@@ -14,7 +14,7 @@ const ASSETS = [
   './art/monster-0.jpg','./art/monster-1.jpg','./art/monster-2.jpg','./art/monster-3.jpg','./art/monster-4.jpg',
   './art/monster-5.jpg','./art/monster-6.jpg','./art/monster-7.jpg','./art/monster-8.jpg','./art/monster-9.jpg',
   './art/bg-space.jpg','./art/bg-baseball.jpg','./art/bg-golf.jpg','./art/bg-monster.jpg','./art/hero.jpg',
-  './art/galaxy.jpg',
+  './art/galaxy.jpg','./art/rocket-boy.png',
   // world + menu tiles
   './art/menu-blaster.jpg','./art/menu-builder.jpg','./art/menu-reader.jpg','./art/menu-writer.jpg','./art/world-animals.jpg','./art/world-calendar.jpg','./art/world-colors.jpg','./art/world-money.jpg','./art/world-numbers.jpg','./art/world-phonics.jpg','./art/world-shapes.jpg','./art/world-time.jpg','./art/world-words.jpg',
   './art/cal-calendar.jpg','./art/cal-fall.jpg','./art/cal-hourglass.jpg','./art/cal-morning.jpg','./art/cal-night.jpg','./art/cal-spring.jpg','./art/cal-summer.jpg','./art/cal-watch.jpg','./art/cal-winter.jpg',
