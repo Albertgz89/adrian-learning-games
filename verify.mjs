@@ -430,6 +430,20 @@ try {
   ok(drawOk, 'Blaster: all themed scenery/targets/launchers draw without errors');
   ok(!!w.document.getElementById('colBtn'), 'Blaster: collection book button is present');
 
+  // Natural-voice clips: pack exists, files are on disk, say() routes praise to a clip.
+  w.eval('window.__AP = AUDIO_PACK;');
+  const packKeys = Object.keys(w.__AP);
+  const missing = packKeys.filter(k => !fs.existsSync(path.join(DIR, w.__AP[k])));
+  ok(packKeys.length >= 20 && missing.length === 0,
+     'voice pack: ' + packKeys.length + ' natural clips exist on disk (missing: ' + missing.length + ')');
+  w.say('Home run!');
+  ok((w.say._last || '').indexOf('home-run.m4a') >= 0, 'say() plays the natural clip for known phrases');
+  w.say('What is 3 plus 3?');
+  ok(w.say._last === null, 'say() falls back to TTS for dynamic sentences');
+  // Ball sprite plumbing: target art preloader exists with fallback intact.
+  ok(w.eval('typeof tgtFor === "function" && TGT_ART.baseball.indexOf("target-baseball") >= 0'),
+     'Math Blaster: real ball sprites wired with vector fallback');
+
   // Assessment layer: Blaster activities feed the same i-Ready domains.
   w.eval('window.__R=REPORT; localStorage.removeItem("alg-report");');
   const R2 = w.__R;

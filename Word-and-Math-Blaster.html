@@ -298,7 +298,27 @@ function buildVoicePicker(){
 }
 function setVoiceByName(name){ const v=VOICES.find(x=>x.name===name); if(v){ voice=v; try{ localStorage.setItem('wmb-voice',name); }catch(e){} } }
 
+var AUDIO_PACK={'awesome!':'art/audio/awesome.m4a','super!':'art/audio/super.m4a','you got it!':'art/audio/you-got-it.m4a','brilliant!':'art/audio/brilliant.m4a','way to go!':'art/audio/way-to-go.m4a','amazing!':'art/audio/amazing.m4a','blast off!':'art/audio/blast-off.m4a','star power!':'art/audio/star-power.m4a','to the moon!':'art/audio/to-the-moon.m4a','boom!':'art/audio/boom.m4a','direct hit!':'art/audio/direct-hit.m4a','home run!':'art/audio/home-run.m4a','grand slam!':'art/audio/grand-slam.m4a','out of the park!':'art/audio/out-of-the-park.m4a','birdie!':'art/audio/birdie.m4a','hole in one!':'art/audio/hole-in-one.m4a','great swing!':'art/audio/great-swing.m4a','caught it!':'art/audio/caught-it.m4a','gotcha!':'art/audio/gotcha.m4a','super catch!':'art/audio/super-catch.m4a','level up!':'art/audio/level-up.m4a','wonderful writing!':'art/audio/wonderful-writing.m4a'};
+var _sayClip=null;
 function say(text, opts){
+  // Natural pre-recorded clips first (Higgsfield voice); TTS for dynamic text.
+  try{
+    const key=(text||'').trim().toLowerCase();
+    const src=AUDIO_PACK[key];
+    if(src && typeof Audio!=='undefined'){
+      say._last=src;
+      try{ if(_sayClip) _sayClip.pause(); }catch(e){}
+      try{ if(window.speechSynthesis) window.speechSynthesis.cancel(); }catch(e){}
+      _sayClip=new Audio(src);
+      const p=_sayClip.play();
+      if(p && p.catch) p.catch(function(){ speakTTS(text,opts); });
+      return;
+    }
+  }catch(e){}
+  say._last=null;
+  speakTTS(text,opts);
+}
+function speakTTS(text, opts){
   opts=opts||{};
   try{
     const ss=window.speechSynthesis;
@@ -669,6 +689,14 @@ var theme='space';
 // file, offline first paint) draw() falls back to the procedural scenery.
 var BG_ART={space:'art/bg-space.jpg',baseball:'art/bg-baseball.jpg',golf:'art/bg-golf.jpg',monster:'art/bg-monster.jpg'};
 var bgImgs={};
+var TGT_ART={baseball:'art/target-baseball.png',golf:'art/target-golf.png'};
+var tgtImgs={};
+function tgtFor(t){
+  const src=TGT_ART[t]; if(!src || typeof Image==='undefined') return null;
+  let im=tgtImgs[t];
+  if(!im){ try{ im=new Image(); im.onload=function(){ try{ drawOnce(); }catch(e){} }; im.src=src; tgtImgs[t]=im; }catch(e){ return null; } }
+  return (im && im.complete && im.naturalWidth>0) ? im : null;
+}
 function bgFor(t){
   const src=BG_ART[t]; if(!src || typeof Image==='undefined') return null;
   let im=bgImgs[t];
@@ -1207,7 +1235,7 @@ function resolveRock(rock){
     const cheer=pick((THEMES[theme]&&THEMES[theme].cheer)||['Boom!']);
     flash((up?'⬆️ Level up! ':'💥 ')+cheer+' +10', 'var(--good)');
     SFX.play(up?'levelup':'correct');
-    say(up ? 'Level up! '+cheer : cheer, {pitch:1.15, rate:1.05});
+    say(up ? 'Level up!' : cheer, {pitch:1.15, rate:1.05});
     renderScore();
     COLLECT.addStar();
     if(!game.rocks.some(r=>r.correct)){ newWave(); }
@@ -1319,17 +1347,23 @@ function drawTarget(ctx,m){
     ctx.fillStyle='rgba(0,0,0,.16)';
     ctx.beginPath(); ctx.arc(-m.r*0.35,m.r*0.2,m.r*0.18,0,6.2832); ctx.fill();
     ctx.beginPath(); ctx.arc(m.r*0.3,-m.r*0.1,m.r*0.12,0,6.2832); ctx.fill();
-  } else if(t==='baseball'){
-    ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(0,0,m.r,0,6.2832); ctx.fill();
-    ctx.strokeStyle='#9aa7b8'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.arc(0,0,m.r,0,6.2832); ctx.stroke();
-    ctx.strokeStyle='#e23b3b'; ctx.lineWidth=2.5;
-    ctx.beginPath(); ctx.arc(-m.r*0.75,0,m.r, -0.65,0.65); ctx.stroke();
-    ctx.beginPath(); ctx.arc( m.r*0.75,0,m.r, Math.PI-0.65,Math.PI+0.65); ctx.stroke();
-  } else if(t==='golf'){
-    ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(0,0,m.r,0,6.2832); ctx.fill();
-    ctx.strokeStyle='#9aa7b8'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.arc(0,0,m.r,0,6.2832); ctx.stroke();
-    ctx.fillStyle='rgba(150,162,184,.5)';
-    for(let dx=-1;dx<=1;dx++) for(let dy=-1;dy<=1;dy++){ ctx.beginPath(); ctx.arc(dx*m.r*0.42,dy*m.r*0.42,m.r*0.09,0,6.2832); ctx.fill(); }
+  } else if(t==='baseball' || t==='golf'){
+    const im=tgtFor(t);
+    if(im){
+      ctx.rotate(m.spin*0.4);
+      try{ ctx.drawImage(im, -m.r*1.06, -m.r*1.06, m.r*2.12, m.r*2.12); }catch(e){}
+    } else if(t==='baseball'){
+      ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(0,0,m.r,0,6.2832); ctx.fill();
+      ctx.strokeStyle='#9aa7b8'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.arc(0,0,m.r,0,6.2832); ctx.stroke();
+      ctx.strokeStyle='#e23b3b'; ctx.lineWidth=2.5;
+      ctx.beginPath(); ctx.arc(-m.r*0.75,0,m.r, -0.65,0.65); ctx.stroke();
+      ctx.beginPath(); ctx.arc( m.r*0.75,0,m.r, Math.PI-0.65,Math.PI+0.65); ctx.stroke();
+    } else {
+      ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(0,0,m.r,0,6.2832); ctx.fill();
+      ctx.strokeStyle='#9aa7b8'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.arc(0,0,m.r,0,6.2832); ctx.stroke();
+      ctx.fillStyle='rgba(150,162,184,.5)';
+      for(let dx=-1;dx<=1;dx++) for(let dy=-1;dy<=1;dy++){ ctx.beginPath(); ctx.arc(dx*m.r*0.42,dy*m.r*0.42,m.r*0.09,0,6.2832); ctx.fill(); }
+    }
   } else if(t==='monster'){ // little monster to catch — its number is its "power"
     const c=m.tint||'#4ecdc4';
     ctx.fillStyle=c; ctx.beginPath(); ctx.arc(0,0,m.r,0,6.2832); ctx.fill();
@@ -1608,7 +1642,7 @@ function submitWriting(){
     let up=false;
     writer.streak++; if(writer.streak>=3 && lvl<9){ saveWriteLevel(lvl+1); writer.streak=0; up=true; SFX.play('levelup'); }
     if(fb){ fb.textContent=(up?'⬆️ Level up! ':'🎉 ')+'Wonderful writing!'; fb.style.color='var(--good)'; }
-    say((up?'Level up! ':'')+'Wonderful writing! You wrote: '+text.trim(),{rate:0.95});
+    say('Wonderful writing!'); setTimeout(function(){ speakTTS('You wrote: '+text.trim(),{rate:0.95}); }, 1400);
     setTimeout(loadPrompt, 1800);
   } else {
     REPORT.log('WRIT', false);

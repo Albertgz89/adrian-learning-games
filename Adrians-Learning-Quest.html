@@ -1065,7 +1065,27 @@ function buildVoicePicker(){
   });
 }
 function setVoiceByName(name){ const v=VOICES.find(x=>x.name===name); if(v){ voice=v; try{ localStorage.setItem('alq-voice',name); }catch(e){} } }
+var AUDIO_PACK={'awesome!':'art/audio/awesome.m4a','super!':'art/audio/super.m4a','you got it!':'art/audio/you-got-it.m4a','brilliant!':'art/audio/brilliant.m4a','way to go!':'art/audio/way-to-go.m4a','amazing!':'art/audio/amazing.m4a','blast off!':'art/audio/blast-off.m4a','star power!':'art/audio/star-power.m4a','to the moon!':'art/audio/to-the-moon.m4a','boom!':'art/audio/boom.m4a','direct hit!':'art/audio/direct-hit.m4a','home run!':'art/audio/home-run.m4a','grand slam!':'art/audio/grand-slam.m4a','out of the park!':'art/audio/out-of-the-park.m4a','birdie!':'art/audio/birdie.m4a','hole in one!':'art/audio/hole-in-one.m4a','great swing!':'art/audio/great-swing.m4a','caught it!':'art/audio/caught-it.m4a','gotcha!':'art/audio/gotcha.m4a','super catch!':'art/audio/super-catch.m4a','level up!':'art/audio/level-up.m4a','wonderful writing!':'art/audio/wonderful-writing.m4a'};
+var _sayClip=null;
 function say(text, opts){
+  // Natural pre-recorded clips first (Higgsfield voice); TTS for dynamic text.
+  try{
+    const key=(text||'').trim().toLowerCase();
+    const src=AUDIO_PACK[key];
+    if(src && typeof Audio!=='undefined'){
+      say._last=src;
+      try{ if(_sayClip) _sayClip.pause(); }catch(e){}
+      try{ if(window.speechSynthesis) window.speechSynthesis.cancel(); }catch(e){}
+      _sayClip=new Audio(src);
+      const p=_sayClip.play();
+      if(p && p.catch) p.catch(function(){ speakTTS(text,opts); });
+      return;
+    }
+  }catch(e){}
+  say._last=null;
+  speakTTS(text,opts);
+}
+function speakTTS(text, opts){
   opts=opts||{};
   try{
     const ss=window.speechSynthesis;
@@ -1228,7 +1248,7 @@ function chooseAnswer(btn, label){
     if(fb){ fb.textContent=(up?'⬆️ Level up! ':'🎉 ')+praise(); fb.style.color='var(--good)'; }
     burst();
     SFX.play(up?'levelup':'correct');
-    say(up ? 'Level up! '+praise() : praise());
+    say(up ? 'Level up!' : praise());
     COLLECT.addStar();
   }else{
     btn.classList.add('wrong');
