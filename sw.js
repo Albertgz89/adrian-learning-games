@@ -1,6 +1,6 @@
 // Service worker — makes the games installable and fully playable offline.
 // Bump CACHE_VERSION whenever any game file changes so iPads pick up updates.
-const CACHE_VERSION = 'adrian-games-v15';
+const CACHE_VERSION = 'adrian-games-v16';
 const ASSETS = [
   './',
   './index.html',
@@ -13,9 +13,31 @@ const ASSETS = [
   // monster collection art (offline-ready)
   './art/monster-0.jpg','./art/monster-1.jpg','./art/monster-2.jpg','./art/monster-3.jpg','./art/monster-4.jpg',
   './art/monster-5.jpg','./art/monster-6.jpg','./art/monster-7.jpg','./art/monster-8.jpg','./art/monster-9.jpg',
+  './art/monster2-0.jpg','./art/monster2-1.jpg','./art/monster2-2.jpg','./art/monster2-3.jpg','./art/monster2-4.jpg','./art/monster2-5.jpg','./art/monster2-6.jpg','./art/monster2-7.jpg','./art/monster2-8.jpg','./art/monster2-9.jpg',
   './art/bg-space.jpg','./art/bg-baseball.jpg','./art/bg-golf.jpg','./art/bg-monster.jpg','./art/hero.jpg',
   './art/galaxy.jpg','./art/rocket-boy.png',
-  './art/target-baseball.png','./art/target-golf.png','./art/audio/amazing.m4a','./art/audio/awesome.m4a','./art/audio/birdie.m4a','./art/audio/blast-off.m4a','./art/audio/boom.m4a','./art/audio/brilliant.m4a','./art/audio/caught-it.m4a','./art/audio/direct-hit.m4a','./art/audio/gotcha.m4a','./art/audio/grand-slam.m4a','./art/audio/great-swing.m4a','./art/audio/hole-in-one.m4a','./art/audio/home-run.m4a','./art/audio/level-up.m4a','./art/audio/out-of-the-park.m4a','./art/audio/star-power.m4a','./art/audio/super-catch.m4a','./art/audio/super.m4a','./art/audio/to-the-moon.m4a','./art/audio/way-to-go.m4a','./art/audio/wonderful-writing.m4a','./art/audio/you-got-it.m4a',
+  './art/target-baseball.png','./art/target-golf.png',
+  // full voice pack
+  './art/audio/check-up-done-amazing-work.m4a','./art/audio/check-up-time-just-try-your-best-there-are-no-wrong-answers-here.m4a','./art/audio/great-reading.m4a','./art/audio/how-many-days-are-in-one-week.m4a','./art/audio/how-many-months-are-in-one-year.m4a','./art/audio/how-much-is-a-dime-worth.m4a',
+  './art/audio/how-much-is-a-nickel-worth.m4a','./art/audio/how-much-is-a-penny-worth.m4a','./art/audio/how-much-is-a-quarter-worth.m4a','./art/audio/how-much-money-is-here.m4a','./art/audio/look-at-the-picture-is-it-morning-or-night.m4a','./art/audio/stem-find.m4a',
+  './art/audio/stem-missing.m4a','./art/audio/stem-spell.m4a','./art/audio/stem-spelled.m4a','./art/audio/try-the-right-answer.m4a','./art/audio/w-and.m4a','./art/audio/w-ant.m4a',
+  './art/audio/w-apple.m4a','./art/audio/w-are.m4a','./art/audio/w-away.m4a','./art/audio/w-bear.m4a','./art/audio/w-bed.m4a','./art/audio/w-bee.m4a',
+  './art/audio/w-bell.m4a','./art/audio/w-bike.m4a','./art/audio/w-bird.m4a','./art/audio/w-boat.m4a','./art/audio/w-bone.m4a','./art/audio/w-box.m4a',
+  './art/audio/w-bread.m4a','./art/audio/w-bug.m4a','./art/audio/w-bus.m4a','./art/audio/w-cake.m4a','./art/audio/w-can.m4a','./art/audio/w-car.m4a',
+  './art/audio/w-cat.m4a','./art/audio/w-clock.m4a','./art/audio/w-cloud.m4a','./art/audio/w-come.m4a','./art/audio/w-corn.m4a','./art/audio/w-cow.m4a',
+  './art/audio/w-crab.m4a','./art/audio/w-cup.m4a','./art/audio/w-dog.m4a','./art/audio/w-door.m4a','./art/audio/w-drum.m4a','./art/audio/w-duck.m4a',
+  './art/audio/w-ear.m4a','./art/audio/w-egg.m4a','./art/audio/w-feet.m4a','./art/audio/w-fire.m4a','./art/audio/w-fish.m4a','./art/audio/w-for.m4a',
+  './art/audio/w-fox.m4a','./art/audio/w-frog.m4a','./art/audio/w-goat.m4a','./art/audio/w-grape.m4a','./art/audio/w-hat.m4a','./art/audio/w-have.m4a',
+  './art/audio/w-hen.m4a','./art/audio/w-here.m4a','./art/audio/w-house.m4a','./art/audio/w-key.m4a','./art/audio/w-kite.m4a','./art/audio/w-leaf.m4a',
+  './art/audio/w-like.m4a','./art/audio/w-lion.m4a','./art/audio/w-little.m4a','./art/audio/w-look.m4a','./art/audio/w-map.m4a','./art/audio/w-milk.m4a',
+  './art/audio/w-moon.m4a','./art/audio/w-mouse.m4a','./art/audio/w-nose.m4a','./art/audio/w-one.m4a','./art/audio/w-owl.m4a','./art/audio/w-pen.m4a',
+  './art/audio/w-pig.m4a','./art/audio/w-plane.m4a','./art/audio/w-play.m4a','./art/audio/w-rain.m4a','./art/audio/w-ring.m4a','./art/audio/w-rose.m4a',
+  './art/audio/w-said.m4a','./art/audio/w-see.m4a','./art/audio/w-seed.m4a','./art/audio/w-sheep.m4a','./art/audio/w-ship.m4a','./art/audio/w-smile.m4a',
+  './art/audio/w-snake.m4a','./art/audio/w-sock.m4a','./art/audio/w-some.m4a','./art/audio/w-spoon.m4a','./art/audio/w-star.m4a','./art/audio/w-sun.m4a',
+  './art/audio/w-that.m4a','./art/audio/w-the.m4a','./art/audio/w-they.m4a','./art/audio/w-this.m4a','./art/audio/w-tiger.m4a','./art/audio/w-train.m4a',
+  './art/audio/w-tree.m4a','./art/audio/w-two.m4a','./art/audio/w-was.m4a','./art/audio/w-went.m4a','./art/audio/w-whale.m4a','./art/audio/w-what.m4a',
+  './art/audio/w-where.m4a','./art/audio/w-who.m4a','./art/audio/w-with.m4a','./art/audio/w-you.m4a','./art/audio/w-zebra.m4a','./art/audio/what-time-does-the-clock-show.m4a',
+  './art/audio/what-time-will-the-clock-show-in-1-hour.m4a','./art/audio/which-season-does-this-picture-show.m4a','./art/audio/amazing.m4a','./art/audio/awesome.m4a','./art/audio/birdie.m4a','./art/audio/blast-off.m4a','./art/audio/boom.m4a','./art/audio/brilliant.m4a','./art/audio/caught-it.m4a','./art/audio/direct-hit.m4a','./art/audio/gotcha.m4a','./art/audio/grand-slam.m4a','./art/audio/great-swing.m4a','./art/audio/hole-in-one.m4a','./art/audio/home-run.m4a','./art/audio/level-up.m4a','./art/audio/out-of-the-park.m4a','./art/audio/star-power.m4a','./art/audio/super-catch.m4a','./art/audio/super.m4a','./art/audio/to-the-moon.m4a','./art/audio/way-to-go.m4a','./art/audio/wonderful-writing.m4a','./art/audio/you-got-it.m4a',
   // world + menu tiles
   './art/menu-blaster.jpg','./art/menu-builder.jpg','./art/menu-reader.jpg','./art/menu-writer.jpg','./art/world-animals.jpg','./art/world-calendar.jpg','./art/world-colors.jpg','./art/world-money.jpg','./art/world-numbers.jpg','./art/world-phonics.jpg','./art/world-shapes.jpg','./art/world-time.jpg','./art/world-words.jpg',
   './art/cal-calendar.jpg','./art/cal-fall.jpg','./art/cal-hourglass.jpg','./art/cal-morning.jpg','./art/cal-night.jpg','./art/cal-spring.jpg','./art/cal-summer.jpg','./art/cal-watch.jpg','./art/cal-winter.jpg',

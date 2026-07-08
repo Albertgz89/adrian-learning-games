@@ -158,8 +158,28 @@ try {
   ok(CO.count() === 2, 'collection: next 12 stars unlock a second prize');
   CO.showBook();
   const cards = w.document.querySelectorAll('#colBook .colItem').length;
+  const hasSeries2 = /Series 2/.test(w.document.getElementById('colBook').textContent);
   CO.hideBook();
-  ok(cards === 40, 'collection book renders all 40 collectibles (' + cards + ')');
+  ok(cards === 50 && hasSeries2, 'collection book renders all 50 collectibles incl. Series 2 (' + cards + ')');
+  // Booster-pack randomness: pulls spread across sets, not just the active theme.
+  w.eval('localStorage.removeItem("alg-collection");');
+  const pulled = new Set();
+  for (let i = 0; i < 20; i++) { const u = CO.unlockNext(); if (u) pulled.add(u.set); }
+  ok(pulled.size >= 3, 'prizes are random across all sets (' + pulled.size + ' different sets in 20 pulls)');
+  // Trading-card ceremony: full creature-card anatomy (name, HP, type, moves, rarity, set number).
+  CO.celebrate({ set: 'monster', i: 9 });
+  const partyHTML = w.document.getElementById('colParty').innerHTML;
+  ok(/LEGENDARY/.test(partyHTML) && /★★★★/.test(partyHTML) && /HP \d+/.test(partyHTML)
+     && /tcgMove/.test(partyHTML) && /10\/10 · Learning Galaxy/.test(partyHTML),
+     'unlock ceremony is a full creature card (name, HP, moves, rarity, set number)');
+  const goBtn2 = w.document.getElementById('colGo'); if (goBtn2) goBtn2.click();
+  // Binder: owned cards open the full card view on tap.
+  CO.showCard('monster2', 0);
+  const cardHTML = w.document.getElementById('colParty').innerHTML;
+  ok(/Pebbles/.test(cardHTML) && /HP \d+/.test(cardHTML) && /Rock/.test(cardHTML),
+     'book cards open as full creature cards (Pebbles, Rock type)');
+  const closeB = w.document.getElementById('colGo'); if (closeB) closeB.click();
+  w.eval('localStorage.removeItem("alg-collection"); localStorage.setItem("alg-stars","0");');
   // A real correct answer awards a star (integration with chooseAnswer).
   const starsBefore = CO.stars();
   w.startRound('numbers');
@@ -440,6 +460,21 @@ try {
   ok((w.say._last || '').indexOf('home-run.m4a') >= 0, 'say() plays the natural clip for known phrases');
   w.say('What is 3 plus 3?');
   ok(w.say._last === null, 'say() falls back to TTS for dynamic sentences');
+  // Word clips + stem chaining: "Spell cat" = stem clip + word clip; prompts route too.
+  w.say('Spell cat');
+  const chainOk1 = (w.say._last || '').indexOf('w-cat.m4a') >= 0;
+  w.say('Find the word... the');
+  const chainOk2 = (w.say._last || '').indexOf('w-the.m4a') >= 0;
+  w.say('You spelled frog');
+  const chainOk3 = (w.say._last || '').indexOf('w-frog.m4a') >= 0;
+  ok(chainOk1 && chainOk2 && chainOk3, 'say() chains stem + word clips (Spell/Find/You spelled)');
+  // Every word clip and prompt clip referenced in code exists on disk.
+  w.eval('window.__WC = Object.keys(WORD_CLIPS); window.__PC = PROMPT_CLIPS;');
+  const missW = w.__WC.filter(k => !fs.existsSync(path.join(DIR, 'art/audio/w-' + k + '.m4a')));
+  const missP = Object.values(w.__PC).filter(p => !fs.existsSync(path.join(DIR, p)));
+  const missS = ['stem-find','stem-spell','stem-missing','stem-spelled'].filter(n => !fs.existsSync(path.join(DIR, 'art/audio/' + n + '.m4a')));
+  ok(missW.length === 0 && missP.length === 0 && missS.length === 0,
+     'full voice pack on disk: ' + w.__WC.length + ' words + ' + Object.keys(w.__PC).length + ' prompts + 4 stems (missing: ' + (missW.length + missP.length + missS.length) + ')');
   // Ball sprite plumbing: target art preloader exists with fallback intact.
   ok(w.eval('typeof tgtFor === "function" && TGT_ART.baseball.indexOf("target-baseball") >= 0'),
      'Math Blaster: real ball sprites wired with vector fallback');

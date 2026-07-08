@@ -400,7 +400,7 @@ function genSight(){
   let right=pick(SIGHT), g=0;
   while(recentSight.indexOf(right)>=0 && g++<30) right=pick(SIGHT);
   recentSight.push(right); if(recentSight.length>8) recentSight.shift();
-  return { q:'🔊 Listen! Find it below.', say:'Find the word...  '+right, replay:right,
+  return { q:'🔊 Listen! Find it below.', say:'Find the word... '+right, replay:right,
            right, choices:wordChoices(right,SIGHT), hint:'Tap 🔊 to hear it again.' };
 }
 
@@ -669,6 +669,7 @@ var COLLECT = {
   onResume: null,
   SETS: {
     monster:  { title:'Monster Friends',  names:['Sparkle','Flamewing','Bloop','Zappy','Grumble','Fluffzor','Chomper','Wiggles','Frostbite','Thunderpaw'] },
+    monster2: { title:'Monster Friends — Series 2', names:['Pebbles','Glowtail','Munchie','Twizzle','Boulder','Sprocket','Nimbus','Fangster','Dazzle','Rumble'] },
     baseball: { title:'Baseball Legends', emo:['⚾','🧢','🏆','🧤','🦅','⭐','👟','💍','🎽','🦁'],
                 names:['Home Run Ball','Champ Cap','MVP Trophy','Golden Glove','Eagle Eye','All-Star','Lucky Cleats','Champion Ring','Team Jersey','Mascot Rory'] },
     golf:     { title:'Golf Champions',   emo:['⛳','🏌️','🏆','🥇','🌲','🦆','🎯','🧢','☂️','🃏'],
@@ -688,17 +689,24 @@ var COLLECT = {
     this.updateBadge();
   },
   unlockNext(){
-    const o=this.owned();
-    const order=[this.themeSet()].concat(Object.keys(this.SETS).filter(k=>k!==this.themeSet()));
-    for(const set of order){
-      const own=o[set]||[], missing=[];
-      for(let i=0;i<10;i++) if(own.indexOf(i)<0) missing.push(i);
-      if(missing.length){ const i=missing[rint(missing.length)]; own.push(i); o[set]=own; this.save(o); return {set:set,i:i}; }
+    // booster-pack style: every pull is random across ALL sets
+    const o=this.owned(); const pool=[];
+    for(const set of Object.keys(this.SETS)){
+      const own=o[set]||[];
+      for(let i=0;i<10;i++) if(own.indexOf(i)<0) pool.push([set,i]);
     }
-    return null;
+    if(!pool.length) return null;
+    const pick2=pool[rint(pool.length)];
+    const own=o[pick2[0]]||[]; own.push(pick2[1]); o[pick2[0]]=own; this.save(o);
+    return {set:pick2[0], i:pick2[1]};
   },
+  total(){ return Object.keys(this.SETS).length*10; },
+  // trading-card rarity: index 0-3 common, 4-6 rare, 7-8 epic, 9 legendary
+  rarity(i){ return i>=9?{n:4,label:'LEGENDARY',c:'#f5a623'} : i>=7?{n:3,label:'EPIC',c:'#a06bff'} : i>=4?{n:2,label:'RARE',c:'#5b8cff'} : {n:1,label:'COMMON',c:'#9aa5c8'}; },
+  power(set,i){ return 10 + ((i*17 + set.length*7) % 89); },
   itemSVG(set,i){
     if(set==='monster') return monsterSVG(i);
+    if(set==='monster2') return monsterSVG((i+4)%10);
     const emo=(this.SETS[set].emo||[])[i]||'⭐';
     return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">'
       +'<rect x="14" y="14" width="228" height="228" rx="30" fill="#ffffff" stroke="#e3e8ff" stroke-width="8"/>'
@@ -707,7 +715,7 @@ var COLLECT = {
   _uri(svg){ return 'data:image/svg+xml;utf8,'+encodeURIComponent(svg); },
   // Generated character art (art/ folder, Higgsfield); SVG art is the fallback
   // via data-fb + onerror so the collection still works from a lone HTML file.
-  itemArt(set,i){ return set==='monster' ? 'art/monster-'+i+'.jpg' : 'art/card-'+set+'-'+i+'.jpg'; },
+  itemArt(set,i){ return set==='monster' ? 'art/monster-'+i+'.jpg' : set==='monster2' ? 'art/monster2-'+i+'.jpg' : 'art/card-'+set+'-'+i+'.jpg'; },
   ensureUI(){
     if(document.getElementById('colBtn')) return;
     const st=document.createElement('style');
@@ -731,7 +739,26 @@ var COLLECT = {
       +'#colParty img{width:200px;height:200px;margin:6px auto;display:block}'
       +'#colParty .nm{font-size:26px;font-weight:800;margin:4px 0}'
       +'#colParty .newb{font-size:15px;font-weight:800;color:#ff8a3d;letter-spacing:2px}'
-      +'#colParty button{border:none;border-radius:16px;background:#ff8a3d;color:#fff;font-family:inherit;font-weight:800;font-size:19px;padding:13px 26px;cursor:pointer;margin-top:8px;box-shadow:0 6px 0 #d9531c}';
+      +'#colParty button{border:none;border-radius:16px;background:#ff8a3d;color:#fff;font-family:inherit;font-weight:800;font-size:19px;padding:13px 26px;cursor:pointer;margin-top:8px;box-shadow:0 6px 0 #d9531c}'
+      +'#colParty .tcg{position:relative;margin:8px auto;width:262px;border-radius:14px;padding:9px 9px 7px;overflow:hidden;text-align:left;'
+      +'background:linear-gradient(160deg,#f6d34a,#e8b62a);box-shadow:0 0 24px var(--rc), 0 12px 28px rgba(0,0,0,.45);border:2px solid #c9992a}'
+      +'#colParty .tcgTop{display:flex;justify-content:space-between;align-items:baseline;padding:1px 3px 5px}'
+      +'#colParty .tcgName{font-weight:800;font-size:17px;color:#2a2415}'
+      +'#colParty .tcgHp{font-weight:800;font-size:14px;color:#c0392b;white-space:nowrap}'
+      +'#colParty .tcgHp b{font-size:16px}'
+      +'#colParty .tcgArt{border:3px solid #fff;border-radius:8px;overflow:hidden;box-shadow:inset 0 0 8px rgba(0,0,0,.25)}'
+      +'#colParty .tcgArt img{width:100%;height:auto;display:block}'
+      +'#colParty .tcgType{font-size:10.5px;font-weight:800;color:#5a4a1a;text-align:center;padding:4px 0 2px;letter-spacing:.4px}'
+      +'#colParty .tcgMove{display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,.55);'
+      +'border-radius:8px;padding:5px 10px;margin-top:4px;font-weight:800;font-size:13.5px;color:#2a2415}'
+      +'#colParty .tcgMove b{font-size:17px;color:#c0392b}'
+      +'#colParty .tcgBot{display:flex;justify-content:space-between;align-items:center;padding:6px 3px 0;font-size:13px}'
+      +'#colParty .tcgNum{font-size:9.5px;font-weight:800;color:#6a5a2a;letter-spacing:.4px}'
+      +'#colParty .tcgRar{color:#fff;font-size:9.5px;font-weight:800;letter-spacing:1.5px;border-radius:999px;padding:2px 8px}'
+      +'#colParty .sheen{position:absolute;inset:0;pointer-events:none;'
+      +'background:linear-gradient(115deg, transparent 30%, rgba(255,255,255,.5) 45%, transparent 60%);'
+      +'background-size:250% 100%;animation:sheen 2.4s ease-in-out infinite}'
+      +'@keyframes sheen{0%{background-position:120% 0}60%{background-position:-60% 0}100%{background-position:-60% 0}}';
     document.head.appendChild(st);
     const btn=document.createElement('button');
     btn.id='colBtn'; btn.type='button';
@@ -749,13 +776,13 @@ var COLLECT = {
   updateBadge(){
     const b=document.getElementById('colBtn'); if(!b) return;
     const toGo=this.PACK-(this.stars()%this.PACK);
-    b.innerHTML='📚 <span class="cnt">'+this.count()+'/40</span>';
+    b.innerHTML='📚 <span class="cnt">'+this.count()+'/'+this.total()+'</span>';
     b.title=toGo+' more stars to the next prize';
   },
   showBook(){
     const book=document.getElementById('colBook'); if(!book) return;
     const o=this.owned();
-    let html='<div class="colCard"><div class="colTop"><h2>📚 My Collection ('+this.count()+'/40)</h2><div style="text-align:center;color:#6b7aa8;font-weight:800">'+(this.PACK-(this.stars()%this.PACK))+' ⭐ to your next prize!</div>'
+    let html='<div class="colCard"><div class="colTop"><h2>📚 My Collection ('+this.count()+'/'+this.total()+')</h2><div style="text-align:center;color:#6b7aa8;font-weight:800">'+(this.PACK-(this.stars()%this.PACK))+' ⭐ to your next prize!</div>'
       +'<div><button class="colSnd" id="colSnd">'+(SFX.on?'🔊 Sounds ON':'🔇 Sounds OFF')+'</button> '
       +'<button class="colX" id="colX">✕</button></div></div>';
     for(const set of Object.keys(this.SETS)){
@@ -766,25 +793,94 @@ var COLLECT = {
         const art=have?this.itemArt(set,i)
                       :this._uri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><rect x="14" y="14" width="228" height="228" rx="30" fill="#e8ecfb"/><text x="128" y="128" font-size="110" text-anchor="middle" dominant-baseline="central" fill="#b9c3e8">?</text></svg>');
         const fb=have?(' data-fb="'+this._uri(this.itemSVG(set,i))+'"'):'';
-        html+='<div class="colItem'+(have?'':' lock')+'"><img alt=""'+fb+' src="'+art+'"><div>'+(have?s.names[i]:'???')+'</div></div>';
+        const rar=this.rarity(i);
+        html+='<div class="colItem'+(have?' own':' lock')+'" data-set="'+set+'" data-i="'+i+'">'
+          +'<img alt=""'+fb+' src="'+art+'"'+(have?' style="box-shadow:0 0 0 3px '+rar.c+'"':'')+'>'
+          +'<div>'+(have?s.names[i]:'???')+'</div>'
+          +(have?'<div style="color:'+rar.c+';letter-spacing:1px">'+'★'.repeat(rar.n)+'</div>':'')
+          +'</div>';
       }
       html+='</div>';
     }
     html+='</div>';
     book.innerHTML=html; book.classList.add('on');
     [...book.querySelectorAll('img[data-fb]')].forEach(img=>{ img.onerror=()=>{ img.onerror=null; img.src=img.dataset.fb; }; });
+    [...book.querySelectorAll('.colItem.own')].forEach(el=>{ el.style.cursor='pointer';
+      el.addEventListener('click',()=>this.showCard(el.dataset.set, parseInt(el.dataset.i,10))); });
     const x=document.getElementById('colX'); if(x) x.addEventListener('click',()=>this.hideBook());
     const snd=document.getElementById('colSnd');
     if(snd) snd.addEventListener('click',()=>{ SFX.toggle(); snd.textContent=SFX.on?'🔊 Sounds ON':'🔇 Sounds OFF'; if(SFX.on) SFX.play('correct'); });
   },
   hideBook(){ const b=document.getElementById('colBook'); if(b) b.classList.remove('on'); },
+
+  // --- creature-card data: type, HP, moves (all original; classic TCG anatomy) ---
+  TYPES:{
+    monster:  ['✨ Fairy','🔥 Fire','💧 Water','⚡ Electric','🌿 Grass','✨ Fairy','💧 Water','🔥 Fire','❄️ Ice','⚡ Electric'],
+    monster2: ['🪨 Rock','⚡ Electric','🌿 Grass','✨ Fairy','🪨 Rock','⚙️ Metal','💨 Sky','🌙 Night','✨ Fairy','🔥 Fire'],
+  },
+  MOVES:{
+    '🔥':[['Flame Spin',20],['Blaze Burst',40],['Ember Dash',30]],
+    '💧':[['Bubble Pop',20],['Wave Splash',40],['Drip Drop',30]],
+    '🌿':[['Leaf Whirl',20],['Vine Hug',40],['Petal Storm',30]],
+    '⚡':[['Zap Tap',20],['Thunder Wiggle',40],['Spark Jump',30]],
+    '🪨':[['Pebble Toss',20],['Boulder Roll',40],['Rock Bop',30]],
+    '✨':[['Sparkle Beam',20],['Glitter Blast',40],['Shine Shine',30]],
+    '❄️':[['Snow Puff',20],['Freeze Sneeze',40],['Icicle Drop',30]],
+    '⚙️':[['Gear Whirl',20],['Robo Punch',40],['Sprocket Spin',30]],
+    '💨':[['Cloud Bounce',20],['Star Rain',40],['Sky Drift',30]],
+    '🌙':[['Night Flap',20],['Moon Swoop',40],['Fang Tickle',30]],
+    '⚾':[['Fastball Fling',20],['Home Run Smash',50],['Curveball Curve',30]],
+    '⛳':[['Perfect Putt',20],['Fairway Drive',50],['Chip Shot',30]],
+    '🚀':[['Rocket Zoom',20],['Comet Crash',50],['Star Hop',30]],
+  },
+  cardType(set,i){
+    if(this.TYPES[set]) return this.TYPES[set][i];
+    return set==='baseball' ? '⚾ Sport' : set==='golf' ? '⛳ Sport' : '🚀 Cosmic';
+  },
+  cardHP(set,i){ return 40 + (i%5)*10 + this.rarity(i).n*20; },
+  cardMoves(set,i){
+    const icon=this.cardType(set,i).split(' ')[0];
+    const pool=this.MOVES[icon]||this.MOVES['✨'];
+    const r=this.rarity(i);
+    const m1=pool[i%pool.length], m2=pool[(i+1)%pool.length];
+    return [[m1[0], m1[1]+r.n*10],[m2[0], m2[1]+r.n*10]];
+  },
+  cardHTML(set,i,banner){
+    const s=this.SETS[set], name=s.names[i], rar=this.rarity(i);
+    const type=this.cardType(set,i), hp=this.cardHP(set,i), mv=this.cardMoves(set,i);
+    const num=(i+1)+'/'+10;
+    return '<div class="tcg r'+rar.n+'" style="--rc:'+rar.c+'">'
+      +(banner?'<div class="tcgBanner">'+banner+'</div>':'')
+      +'<div class="tcgTop"><span class="tcgName">'+name+'</span>'
+      +'<span class="tcgHp">HP '+hp+' <b>'+type.split(' ')[0]+'</b></span></div>'
+      +'<div class="tcgArt"><img alt="" data-fb="'+this._uri(this.itemSVG(set,i))+'" src="'+this.itemArt(set,i)+'"></div>'
+      +'<div class="tcgType">'+type+' · '+s.title+'</div>'
+      +'<div class="tcgMove"><span>'+mv[0][0]+'</span><b>'+mv[0][1]+'</b></div>'
+      +'<div class="tcgMove"><span>'+mv[1][0]+'</span><b>'+mv[1][1]+'</b></div>'
+      +'<div class="tcgBot"><span style="color:'+rar.c+'">'+'★'.repeat(rar.n)+'</span>'
+      +'<span class="tcgNum">'+num+' · Learning Galaxy</span>'
+      +'<span class="tcgRar" style="background:'+rar.c+'">'+rar.label+'</span></div>'
+      +(rar.n>=3?'<div class="sheen"></div>':'')
+      +'</div>';
+  },
+  showCard(set,i){
+    this.ensureUI();
+    const party=document.getElementById('colParty'); if(!party) return;
+    party.innerHTML='<div class="colCard">'+this.cardHTML(set,i,null)
+      +'<button id="colGo" type="button">Close ✕</button></div>';
+    party.classList.add('on');
+    [...party.querySelectorAll('img[data-fb]')].forEach(img=>{ img.onerror=()=>{ img.onerror=null; img.src=img.dataset.fb; }; });
+    const go=document.getElementById('colGo');
+    if(go) go.addEventListener('click',()=>{ party.classList.remove('on'); if(this.onResume){ try{ this.onResume(); }catch(e){} } });
+    if(this.onPause){ try{ this.onPause(); }catch(e){} }
+    say(this.SETS[set].names[i]);
+  },
   celebrate(u){
     this.ensureUI();
     const party=document.getElementById('colParty'); if(!party) return;
     const name=this.SETS[u.set].names[u.i];
-    party.innerHTML='<div class="colCard"><div class="newb">✨ NEW PRIZE UNLOCKED ✨</div>'
-      +'<img alt="" data-fb="'+this._uri(this.itemSVG(u.set,u.i))+'" src="'+this.itemArt(u.set,u.i)+'">'
-      +'<div class="nm">'+name+'</div>'
+    party.innerHTML='<div class="colCard"><div class="newb">✨ NEW CARD! ✨</div>'
+      +this.cardHTML(u.set,u.i,null)
       +'<button id="colGo" type="button">Awesome! ➡</button></div>';
     party.classList.add('on');
     [...party.querySelectorAll('img[data-fb]')].forEach(img=>{ img.onerror=()=>{ img.onerror=null; img.src=img.dataset.fb; }; });
@@ -1066,20 +1162,66 @@ function buildVoicePicker(){
 }
 function setVoiceByName(name){ const v=VOICES.find(x=>x.name===name); if(v){ voice=v; try{ localStorage.setItem('alq-voice',name); }catch(e){} } }
 var AUDIO_PACK={'awesome!':'art/audio/awesome.m4a','super!':'art/audio/super.m4a','you got it!':'art/audio/you-got-it.m4a','brilliant!':'art/audio/brilliant.m4a','way to go!':'art/audio/way-to-go.m4a','amazing!':'art/audio/amazing.m4a','blast off!':'art/audio/blast-off.m4a','star power!':'art/audio/star-power.m4a','to the moon!':'art/audio/to-the-moon.m4a','boom!':'art/audio/boom.m4a','direct hit!':'art/audio/direct-hit.m4a','home run!':'art/audio/home-run.m4a','grand slam!':'art/audio/grand-slam.m4a','out of the park!':'art/audio/out-of-the-park.m4a','birdie!':'art/audio/birdie.m4a','hole in one!':'art/audio/hole-in-one.m4a','great swing!':'art/audio/great-swing.m4a','caught it!':'art/audio/caught-it.m4a','gotcha!':'art/audio/gotcha.m4a','super catch!':'art/audio/super-catch.m4a','level up!':'art/audio/level-up.m4a','wonderful writing!':'art/audio/wonderful-writing.m4a'};
+// question-prompt clips (same Luna voice)
+var PROMPT_CLIPS={
+  'what time does the clock show?':'art/audio/what-time-does-the-clock-show.m4a',
+  'what time will the clock show in 1 hour?':'art/audio/what-time-will-the-clock-show-in-1-hour.m4a',
+  'look at the picture. is it morning or night?':'art/audio/look-at-the-picture-is-it-morning-or-night.m4a',
+  'which season does this picture show?':'art/audio/which-season-does-this-picture-show.m4a',
+  'how much money is here?':'art/audio/how-much-money-is-here.m4a',
+  'how much is a penny worth?':'art/audio/how-much-is-a-penny-worth.m4a',
+  'how much is a nickel worth?':'art/audio/how-much-is-a-nickel-worth.m4a',
+  'how much is a dime worth?':'art/audio/how-much-is-a-dime-worth.m4a',
+  'how much is a quarter worth?':'art/audio/how-much-is-a-quarter-worth.m4a',
+  'how many days are in one week?':'art/audio/how-many-days-are-in-one-week.m4a',
+  'how many months are in one year?':'art/audio/how-many-months-are-in-one-year.m4a',
+  'check up time! just try your best. there are no wrong answers here.':'art/audio/check-up-time-just-try-your-best-there-are-no-wrong-answers-here.m4a',
+  'check up done! amazing work!':'art/audio/check-up-done-amazing-work.m4a',
+  'try the right answer':'art/audio/try-the-right-answer.m4a',
+  'great reading!':'art/audio/great-reading.m4a'
+};
+var WORD_CLIPS={'the':1,'and':1,'you':1,'was':1,'for':1,'are':1,'they':1,'said':1,'have':1,'with':1,'this':1,'that':1,'what':1,'little':1,'here':1,'where':1,'come':1,'some':1,'one':1,'two':1,'like':1,'see':1,'can':1,'play':1,'went':1,'look':1,'who':1,'away':1,'cat':1,'dog':1,'sun':1,'bed':1,'pig':1,'hat':1,'bus':1,'box':1,'fox':1,'egg':1,'ant':1,'bee':1,'car':1,'key':1,'map':1,'pen':1,'ear':1,'owl':1,'cow':1,'hen':1,'bug':1,'cup':1,'fish':1,'frog':1,'star':1,'drum':1,'milk':1,'corn':1,'duck':1,'bell':1,'ring':1,'sock':1,'crab':1,'ship':1,'moon':1,'tree':1,'bird':1,'lion':1,'bear':1,'door':1,'fire':1,'leaf':1,'cake':1,'bike':1,'boat':1,'rain':1,'kite':1,'snake':1,'grape':1,'train':1,'goat':1,'whale':1,'bone':1,'rose':1,'feet':1,'seed':1,'nose':1,'clock':1,'bread':1,'cloud':1,'tiger':1,'mouse':1,'house':1,'plane':1,'sheep':1,'spoon':1,'zebra':1,'apple':1,'smile':1};
+var STEMS=[['find the word...','art/audio/stem-find.m4a'],
+           ['you spelled ','art/audio/stem-spelled.m4a'],
+           ['which letter is missing in ','art/audio/stem-missing.m4a'],
+           ['spell ','art/audio/stem-spell.m4a']];
+function clipFor(k){
+  if(AUDIO_PACK[k]) return AUDIO_PACK[k];
+  if(PROMPT_CLIPS[k]) return PROMPT_CLIPS[k];
+  var w=k.replace(/[.!?]$/,'');
+  if(WORD_CLIPS[w]) return 'art/audio/w-'+w+'.m4a';
+  return null;
+}
 var _sayClip=null;
-function say(text, opts){
-  // Natural pre-recorded clips first (Higgsfield voice); TTS for dynamic text.
-  try{
-    const key=(text||'').trim().toLowerCase();
-    const src=AUDIO_PACK[key];
-    if(src && typeof Audio!=='undefined'){
-      say._last=src;
-      try{ if(_sayClip) _sayClip.pause(); }catch(e){}
-      try{ if(window.speechSynthesis) window.speechSynthesis.cancel(); }catch(e){}
-      _sayClip=new Audio(src);
-      const p=_sayClip.play();
+function playClips(list,text,opts){
+  say._last=list[list.length-1];
+  try{ if(window.speechSynthesis) window.speechSynthesis.cancel(); }catch(e){}
+  try{ if(_sayClip){ _sayClip.onended=null; _sayClip.pause(); } }catch(e){}
+  var i=0;
+  function next(){
+    if(i>=list.length) return;
+    try{
+      _sayClip=new Audio(list[i++]);
+      _sayClip.onended=next;
+      var p=_sayClip.play();
       if(p && p.catch) p.catch(function(){ speakTTS(text,opts); });
-      return;
+    }catch(e){ speakTTS(text,opts); }
+  }
+  next();
+}
+function say(text, opts){
+  // Natural pre-recorded clips first (Higgsfield Luna); TTS only for dynamic text.
+  try{
+    var k=(text||'').trim().toLowerCase();
+    var single=clipFor(k);
+    if(single && typeof Audio!=='undefined') return playClips([single],text,opts);
+    for(var si=0; si<STEMS.length; si++){
+      var pre=STEMS[si][0], stem=STEMS[si][1];
+      if(k.indexOf(pre)===0){
+        var rest=k.slice(pre.length).trim().replace(/[.!?]$/,'');
+        if(WORD_CLIPS[rest] && typeof Audio!=='undefined')
+          return playClips([stem,'art/audio/w-'+rest+'.m4a'],text,opts);
+      }
     }
   }catch(e){}
   say._last=null;
