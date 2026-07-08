@@ -1,6 +1,6 @@
 // Service worker — makes the games installable and fully playable offline.
 // Bump CACHE_VERSION whenever any game file changes so iPads pick up updates.
-const CACHE_VERSION = 'adrian-games-v16';
+const CACHE_VERSION = 'adrian-games-v17';
 const ASSETS = [
   './',
   './index.html',

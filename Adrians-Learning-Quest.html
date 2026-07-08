@@ -1193,21 +1193,41 @@ function clipFor(k){
   return null;
 }
 var _sayClip=null;
+function ensureSayAudio(){
+  if(!_sayClip && typeof Audio!=='undefined'){
+    try{ _sayClip=new Audio(); _sayClip.setAttribute('playsinline',''); _sayClip.preload='auto'; }catch(e){}
+  }
+  return _sayClip;
+}
+// iOS/Chrome unlock: on the FIRST real tap, silently play the reusable audio
+// element and prime speechSynthesis so later async plays are allowed.
+function primeAudio(){
+  try{
+    var a=ensureSayAudio();
+    if(a){ a.muted=true; a.src='art/audio/super.m4a';
+      var p=a.play();
+      if(p&&p.then) p.then(function(){ a.pause(); a.muted=false; }).catch(function(){ a.muted=false; });
+      else a.muted=false;
+    }
+  }catch(e){}
+  try{
+    if(window.speechSynthesis && window.SpeechSynthesisUtterance){
+      var u=new SpeechSynthesisUtterance(' '); u.volume=0; window.speechSynthesis.speak(u);
+    }
+  }catch(e){}
+}
 function playClips(list,text,opts){
   say._last=list[list.length-1];
   try{ if(window.speechSynthesis) window.speechSynthesis.cancel(); }catch(e){}
-  try{ if(_sayClip){ _sayClip.onended=null; _sayClip.pause(); } }catch(e){}
+  var a=ensureSayAudio();
+  if(!a){ speakTTS(text,opts); return; }
   var i=0;
-  function next(){
-    if(i>=list.length) return;
-    try{
-      _sayClip=new Audio(list[i++]);
-      _sayClip.onended=next;
-      var p=_sayClip.play();
-      if(p && p.catch) p.catch(function(){ speakTTS(text,opts); });
-    }catch(e){ speakTTS(text,opts); }
-  }
-  next();
+  a.onended=function(){ if(i<list.length){ a.src=list[i++]; var p=a.play(); if(p&&p.catch) p.catch(function(){}); } };
+  try{
+    a.pause(); a.muted=false; a.src=list[i++];
+    var p=a.play();
+    if(p&&p.catch) p.catch(function(){ speakTTS(text,opts); });
+  }catch(e){ speakTTS(text,opts); }
 }
 function say(text, opts){
   // Natural pre-recorded clips first (Higgsfield Luna); TTS only for dynamic text.
@@ -1464,7 +1484,7 @@ function burst(){
   // collection + sounds (browsers unlock audio on the first tap) + progress report
   COLLECT.ensureUI();
   REPORT.ensureUI();
-  document.addEventListener('pointerdown',()=>SFX.ensure(),{once:true});
+  document.addEventListener('pointerdown',function(){ SFX.ensure(); primeAudio(); },{once:true});
   // voice picker
   const sel=$('voicePick'); if(sel) sel.addEventListener('change',()=>setVoiceByName(sel.value));
   const vt=$('voiceTest'); if(vt) vt.addEventListener('click',()=>say('Hi! Let us learn together.', {pitch:1.1}));
