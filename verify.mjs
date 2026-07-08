@@ -271,6 +271,73 @@ try {
     if (/\+/.test(mq.q)) { sawAdd = true; if (!mq.say || mq.say.indexOf('plus') < 0) mathSpeech = false; }
   }
   ok(mathSpeech && sawSub && sawAdd, 'math speech: symbol questions are spoken as "plus"/"minus"');
+  // ---- FACT AUDIT: re-verify generated questions against independent truth tables ----
+  w.eval('window.__gs2=genShapes; window.__ga=genAnimals;');
+  const SIDES = { Circle: 0, Triangle: 3, Square: 4, Rectangle: 4, Pentagon: 5, Hexagon: 6, Star: 10 };
+  let shapeBad = 0;
+  for (let i = 0; i < 600; i++) {
+    const q = w.__gs2();
+    if (q.meta && q.meta.sides != null) {
+      if (SIDES[q.right] !== q.meta.sides) shapeBad++;                                  // right answer must truly have N sides
+      if (q.choices.some(c => c !== q.right && SIDES[c] === q.meta.sides)) shapeBad++;  // no second valid answer offered
+    }
+  }
+  ok(shapeBad === 0, 'FACT AUDIT shapes: side counts true and never ambiguous (600 draws, ' + shapeBad + ' bad)');
+  const VOWEL = { team: 'long E', feet: 'long E', rain: 'long A', boat: 'long O' };
+  let vtBad = 0;
+  for (let i = 0; i < 600; i++) {
+    const q = w.__gp();
+    if (q.meta && q.meta.vt) {
+      if (VOWEL[q.right] !== q.meta.vt) vtBad++;
+      if (q.choices.some(c => c !== q.right && VOWEL[c] === q.meta.vt)) vtBad++;
+    }
+  }
+  ok(vtBad === 0, 'FACT AUDIT phonics: vowel-team answers unique for the asked sound (' + vtBad + ' bad)');
+  const COLORS = { 'a banana':'Yellow','the sun':'Yellow','a school bus':'Yellow','a rubber duck':'Yellow',
+    'the grass':'Green','a frog':'Green','a leaf in summer':'Green','broccoli':'Green',
+    'the sky on a sunny day':'Blue','the ocean':'Blue','a blueberry':'Blue','blue jeans':'Blue',
+    'a strawberry':'Red','a fire truck':'Red','a stop sign':'Red','a ladybug':'Red',
+    'an orange':'Orange','a carrot':'Orange','a pumpkin':'Orange','a basketball':'Orange',
+    'a grape':'Purple','an eggplant':'Purple','a plum':'Purple',
+    'fresh snow':'White','a polar bear':'White','a baseball':'White','milk':'White',
+    'a piece of coal':'Black','a bat at night':'Black','a bowling ball':'Black',
+    'chocolate':'Brown','a teddy bear':'Brown','a tree trunk':'Brown','a football':'Brown',
+    'cotton candy':'Pink','a flamingo':'Pink','a pig':'Pink',
+    'an elephant':'Gray','a rain cloud':'Gray','a shark':'Gray' };
+  let colBad = 0;
+  for (let i = 0; i < 600; i++) {
+    const q = w.__gcol(1);
+    const m = q.q.match(/^What color is (.+)\?$/);
+    if (m && COLORS[m[1]] !== q.right) { colBad++; if (colBad < 3) console.log('     color mismatch: ' + q.q + ' → ' + q.right); }
+  }
+  ok(colBad === 0, 'FACT AUDIT colors: every thing keyed to its true color (' + colBad + ' bad)');
+  const DAYS7 = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  let dayBad = 0;
+  for (let lvl = 1; lvl <= 4; lvl++) for (let i = 0; i < 300; i++) {
+    const q = w.__gc(lvl); let m;
+    if ((m = q.q.match(/^What day comes after (\w+)\?/)))        { if (DAYS7[(DAYS7.indexOf(m[1]) + 1) % 7] !== q.right) dayBad++; }
+    else if ((m = q.q.match(/^What day comes before (\w+)\?/)))  { if (DAYS7[(DAYS7.indexOf(m[1]) + 6) % 7] !== q.right) dayBad++; }
+    else if ((m = q.q.match(/^Today is (\w+)\. What day was yesterday\?/))) { if (DAYS7[(DAYS7.indexOf(m[1]) + 6) % 7] !== q.right) dayBad++; }
+    else if ((m = q.q.match(/^Today is (\w+)\. What day is tomorrow\?/)))   { if (DAYS7[(DAYS7.indexOf(m[1]) + 1) % 7] !== q.right) dayBad++; }
+    else if ((m = q.q.match(/^Which day comes between (\w+) and (\w+)\?/))) { if (DAYS7[(DAYS7.indexOf(m[1]) + 1) % 7] !== q.right) dayBad++; }
+    else if ((m = q.q.match(/^Is (\w+) a weekend day or a school day\?/)))  { const wk = (m[1] === 'Saturday' || m[1] === 'Sunday'); if ((wk ? 'Weekend day' : 'School day') !== q.right) dayBad++; }
+  }
+  ok(dayBad === 0, 'FACT AUDIT calendar days: after/before/yesterday/tomorrow/between/weekend all recomputed correct (' + dayBad + ' bad)');
+  const ANIMALS = { '“moo”':'Cow','“quack”':'Duck','a fish live':'In water','can fly':'Bird','baby dog':'Puppy','baby cat':'Kitten','animal hops':'Frog' };
+  let aniBad = 0;
+  for (let i = 0; i < 300; i++) {
+    const q = w.__ga();
+    for (const k in ANIMALS) if (q.q.indexOf(k) >= 0 && q.right !== ANIMALS[k]) aniBad++;
+  }
+  ok(aniBad === 0, 'FACT AUDIT animals: every fact question matches the truth table (' + aniBad + ' bad)');
+  const COINS = { penny: '1¢', nickel: '5¢', dime: '10¢', quarter: '25¢' };
+  let coinBad = 0;
+  for (let i = 0; i < 300; i++) {
+    const q = w.__go(1); const m = q.q.match(/^How much is a (\w+) worth\?/);
+    if (m && COINS[m[1]] !== q.right) coinBad++;
+  }
+  ok(coinBad === 0, 'FACT AUDIT money: coin values correct (' + coinBad + ' bad)');
+
   // Repeat-the-question button: present on the quiz screen and safe to click.
   w.startRound('numbers');
   const sayBtn = w.document.getElementById('sayBtn');

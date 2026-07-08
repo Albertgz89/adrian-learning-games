@@ -260,7 +260,7 @@ function genPhonics(){
     const s=pick(sets);
     return { q:`Which word has the long ${s.sound} sound (Magic E)?`, right:s.right, choices:wordChoices(s.right,[...s.pool, ...sets.map(x=>x.right)]), hint:'The e is silent and makes the vowel say its name.' };
   }
-  if(kind===1){ // vowel team
+  if(kind===1){ // vowel team — never offer another word with the SAME target sound
     const sets=[
       {sound:'long E',right:'team',pool:['ten','met','bed','set']},
       {sound:'long A',right:'rain',pool:['ran','ram','rat','rag']},
@@ -268,7 +268,8 @@ function genPhonics(){
       {sound:'long E',right:'feet',pool:['fed','fit','fat','fun']},
     ];
     const s=pick(sets);
-    return { q:`Which word uses a vowel team for the ${s.sound} sound?`, right:s.right, choices:wordChoices(s.right,[...s.pool, ...sets.map(x=>x.right)]), hint:'Two vowels walking — the first does the talking.' };
+    const safeRights=sets.filter(x=>x.sound!==s.sound).map(x=>x.right);
+    return { q:`Which word uses a vowel team for the ${s.sound} sound?`, right:s.right, choices:wordChoices(s.right,[...s.pool, ...safeRights]), hint:'Two vowels walking — the first does the talking.', meta:{vt:s.sound} };
   }
   if(kind===2){ // beginning sound
     const groups={b:['ball','bus','bear'],s:['sun','sock','seal'],m:['moon','mat','mouse'],t:['top','toad','tent'],f:['fish','fan','fox']};
@@ -344,17 +345,23 @@ function genCalendar(level){
 
 // Shape World
 function genShapes(){
+  // sides must be factually right AND unambiguous among the choices shown
   const shapes=[
-    {n:'Circle',sides:'0',clue:'It is perfectly round, like a ball.'},
-    {n:'Triangle',sides:'3',clue:'It has 3 sides and 3 corners.'},
-    {n:'Square',sides:'4',clue:'It has 4 equal sides.'},
-    {n:'Rectangle',sides:'4',clue:'4 sides — two long, two short.'},
-    {n:'Star',sides:'5',clue:'It twinkles in the sky.'},
-    {n:'Pentagon',sides:'5',clue:'It has 5 sides.'},
-    {n:'Hexagon',sides:'6',clue:'It has 6 sides, like a honeycomb.'},
+    {n:'Circle',sides:0,clue:'It is perfectly round, like a ball.'},
+    {n:'Triangle',sides:3,clue:'It has 3 sides and 3 corners.'},
+    {n:'Square',sides:4,clue:'It has 4 equal sides, all the same length.'},
+    {n:'Rectangle',sides:4,clue:'It has 4 sides — two long ones and two short ones.'},
+    {n:'Pentagon',sides:5,clue:'It has exactly 5 sides.'},
+    {n:'Hexagon',sides:6,clue:'It has 6 sides, like a honeycomb.'},
+    {n:'Star',sides:10,clue:'It twinkles in the sky and has 5 points.'},
   ];
-  if(rint(2)){ const s=pick(shapes.filter(x=>x.sides!=='0')); return { q:`Which shape has ${s.sides} sides?`, right:s.n, choices:wordChoices(s.n,shapes.map(x=>x.n)), hint:'Count the sides.' }; }
-  const s=pick(shapes); return { q:s.clue+' What shape is it?', right:s.n, choices:wordChoices(s.n,shapes.map(x=>x.n)), hint:'Picture the shape.' };
+  if(rint(2)){
+    const s=pick(shapes.filter(x=>x.sides>=3 && x.sides<=6));
+    const others=shapes.filter(x=>x.sides!==s.sides).map(x=>x.n);   // never show a same-side twin
+    return { q:`Which shape has ${s.sides} sides?`, right:s.n, choices:wordChoices(s.n,others), hint:'Count the sides.', meta:{sides:s.sides} };
+  }
+  const s=pick(shapes);
+  return { q:s.clue+' What shape is it?', right:s.n, choices:wordChoices(s.n,shapes.map(x=>x.n)), hint:'Picture the shape.' };
 }
 
 // Color World — big bank of everyday things + color-mixing at higher levels.
