@@ -10,37 +10,62 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Adrian Learns">
-<meta name="theme-color" content="#5b8cff">
+<meta name="theme-color" content="#1a1040">
 <style>
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  html,body{margin:0;height:100%}
+  html,body{margin:0;min-height:100%}
   body{
     font-family:"Baloo 2","Trebuchet MS",system-ui,sans-serif;color:#22315b;
-    background:linear-gradient(160deg,#5b8cff,#a06bff);
-    min-height:100%;display:flex;align-items:center;justify-content:center;padding:18px;
+    background:#1a1040;overflow-x:hidden;
+    min-height:100svh;display:flex;align-items:center;justify-content:center;padding:18px;
   }
-  .wrap{width:min(560px,100%);text-align:center}
-  .rocket{width:clamp(110px,30vw,160px);height:auto;filter:drop-shadow(0 12px 22px rgba(10,15,60,.35))}
-  .hero{width:100%;max-width:460px;border-radius:26px;box-shadow:0 18px 40px rgba(10,15,60,.45)}
-  h1{color:#fff;font-size:clamp(30px,8vw,52px);margin:.2em 0 .1em;text-shadow:0 3px 0 rgba(0,0,0,.2)}
-  p.sub{color:#e6ebff;font-size:18px;margin:0 0 22px}
+  /* galaxy backdrop */
+  #galaxy{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:-3}
+  #shade{position:fixed;inset:0;background:radial-gradient(80% 60% at 50% 42%, rgba(15,10,45,.28), rgba(15,10,45,.66));z-index:-2}
+  .star{position:fixed;border-radius:50%;background:#fff;z-index:-1;animation:tw 3s ease-in-out infinite}
+  @keyframes tw{0%,100%{opacity:.15;transform:scale(.7)}50%{opacity:.95;transform:scale(1.15)}}
+
+  /* floating world planets */
+  .planet{
+    position:fixed;z-index:1;border-radius:50%;overflow:visible;cursor:pointer;padding:0;border:3px solid rgba(255,255,255,.75);
+    width:var(--s);height:var(--s);box-shadow:0 0 22px rgba(150,120,255,.55), 0 8px 24px rgba(0,0,0,.45);
+    animation:bob var(--d) ease-in-out infinite;background:#3a2f77;
+    transition:transform .15s;
+  }
+  .planet:active{transform:scale(.9)}
+  .planet img{width:100%;height:100%;object-fit:cover;display:block;border-radius:50%}
+  .planet .pl{position:absolute;left:50%;bottom:-11px;transform:translateX(-50%);background:rgba(12,8,40,.85);color:#fff;
+    font-size:10px;font-weight:800;border-radius:999px;padding:2px 9px;white-space:nowrap;pointer-events:none;
+    box-shadow:0 2px 6px rgba(0,0,0,.4)}
+  @keyframes bob{0%,100%{margin-top:0}50%{margin-top:-14px}}
+  @media (max-width:700px){ .planet.hideS{display:none} }
+
+  .wrap{width:min(560px,100%);text-align:center;position:relative;z-index:2}
+  .hero{width:min(74%,340px);border-radius:26px;box-shadow:0 0 34px rgba(160,120,255,.5), 0 18px 40px rgba(0,0,0,.5);
+    animation:bob 7s ease-in-out infinite}
+  h1{color:#fff;font-size:clamp(30px,8vw,54px);margin:.25em 0 .05em;line-height:1.05;
+    text-shadow:0 0 18px rgba(160,130,255,.9), 0 3px 0 rgba(0,0,0,.35)}
+  p.sub{color:#cfd4ff;font-size:18px;margin:4px 0 20px;font-weight:700;text-shadow:0 1px 4px rgba(0,0,0,.5)}
   a.game{
     display:flex;align-items:center;gap:16px;text-decoration:none;color:#22315b;
-    background:#fff;border-radius:24px;padding:18px 20px;margin:14px 0;text-align:left;
-    box-shadow:0 10px 0 rgba(10,15,60,.25);transition:transform .06s, box-shadow .06s;
+    background:rgba(255,255,255,.96);border-radius:24px;padding:16px 20px;margin:14px 0;text-align:left;
+    box-shadow:0 10px 0 rgba(5,8,35,.5), 0 0 24px rgba(140,110,255,.35);transition:transform .06s, box-shadow .06s;
   }
-  a.game:active{transform:translateY(6px);box-shadow:0 4px 0 rgba(10,15,60,.25)}
-  a.game .ic{font-size:44px;line-height:1}
-  a.game b{display:block;font-size:22px}
-  a.game span{color:#6b7aa8;font-size:15px;font-weight:700}
-  .foot{color:#cdd6ff;font-size:13px;margin-top:22px;font-weight:700}
+  a.game:active{transform:translateY(6px);box-shadow:0 4px 0 rgba(5,8,35,.5)}
+  a.game .ic{font-size:42px;line-height:1}
+  a.game b{display:block;font-size:21px}
+  a.game span{color:#6b7aa8;font-size:14px;font-weight:700}
+  .foot{color:#aab2e8;font-size:13px;margin-top:20px;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,.6)}
 </style>
 </head>
 <body>
+<img id="galaxy" src="art/galaxy.jpg" alt="" onerror="this.remove()">
+<div id="shade"></div>
+
 <div class="wrap">
-  <img class="hero" src="art/hero.jpg" alt="" onerror="this.onerror=null;this.src='icon-192.png';this.className='rocket'">
+  <img class="hero" src="art/hero.jpg" alt="" onerror="this.onerror=null;this.src='icon-192.png'">
   <h1>Adrian's Learning Games</h1>
-  <p class="sub">Pick a game and blast off! 🚀</p>
+  <p class="sub">Tap a floating world — or pick a game! 🚀</p>
 
   <a class="game" href="Adrians-Learning-Quest.html">
     <span class="ic">🗺️</span>
@@ -53,10 +78,52 @@
 
   <div class="foot">Progress, prizes and reports save on this device.</div>
 </div>
+
 <script>
-  if('serviceWorker' in navigator){
-    try{ navigator.serviceWorker.register('sw.js'); }catch(e){}
+  // ---- twinkling stars ----
+  for(let i=0;i<46;i++){
+    const s=document.createElement('div'); s.className='star';
+    const sz=(Math.random()*2.4+1).toFixed(1);
+    s.style.cssText='left:'+(Math.random()*100)+'vw;top:'+(Math.random()*100)+'vh;width:'+sz+'px;height:'+sz+'px;'
+      +'animation-duration:'+(2+Math.random()*3).toFixed(1)+'s;animation-delay:'+(Math.random()*3).toFixed(1)+'s';
+    document.body.appendChild(s);
   }
+
+  // ---- floating world planets (tap to fly straight into that world) ----
+  const WORLDS=[
+    ['numbers','Numbers',   6, 12, 86, 1],
+    ['phonics','Phonics',  86, 10, 78, 1],
+    ['time','Time',         3, 38, 72, 0],
+    ['money','Money',      90, 36, 80, 0],
+    ['calendar','Calendar', 5, 64, 70, 1],
+    ['shapes','Shapes',    89, 62, 74, 1],
+    ['colors','Colors',    12, 86, 64, 0],
+    ['words','Words',      74, 88, 62, 0],
+    ['animals','Animals',  44,  6, 66, 1],
+  ];
+  const planets=[];
+  WORLDS.forEach(([key,label,x,y,size,hideSmall],i)=>{
+    const b=document.createElement('button');
+    b.className='planet'+(hideSmall?' hideS':''); b.type='button'; b.title=label+' World';
+    b.style.cssText='left:calc('+x+'vw - '+(size/2)+'px);top:calc('+y+'vh - '+(size/2)+'px);--s:'+size+'px;--d:'+(5+Math.random()*4).toFixed(1)+'s;animation-delay:'+(Math.random()*4).toFixed(1)+'s';
+    const img=document.createElement('img'); img.alt='';
+    img.onerror=function(){ b.remove(); };
+    img.src='art/world-'+key+'.jpg';
+    const pl=document.createElement('span'); pl.className='pl'; pl.textContent=label;
+    b.appendChild(img); b.appendChild(pl);
+    b.addEventListener('click',()=>{ location.href='Adrians-Learning-Quest.html?world='+key; });
+    document.body.appendChild(b);
+    planets.push({el:b, depth:0.4+(i%3)*0.3});
+  });
+
+  // ---- gentle parallax: planets drift toward the pointer/tilt ----
+  function drift(nx,ny){ // nx,ny in -1..1
+    planets.forEach(p=>{ p.el.style.transform='translate('+(nx*10*p.depth)+'px,'+(ny*10*p.depth)+'px)'; });
+  }
+  window.addEventListener('pointermove',e=>{ drift(e.clientX/innerWidth*2-1, e.clientY/innerHeight*2-1); });
+  window.addEventListener('deviceorientation',e=>{ if(e.gamma!=null) drift(Math.max(-1,Math.min(1,e.gamma/30)), Math.max(-1,Math.min(1,(e.beta-40)/30))); });
+
+  if('serviceWorker' in navigator){ try{ navigator.serviceWorker.register('sw.js'); }catch(e){} }
 </script>
 </body>
 </html>

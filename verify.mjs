@@ -258,6 +258,13 @@ try {
   try { if (sayBtn) sayBtn.click(); } catch (e) { sayOk = false; }
   ok(sayOk, 'Quest: 🔊 "Say it again" button repeats the question');
   ok(!!w.document.querySelector('#homeBtn[href="index.html"]'), 'Quest: 🏠 Games button links back to the launcher');
+  // Galaxy-launcher deep links: ?world=<key> jumps straight into that world.
+  w.eval('window.__dl = openWorldDeepLink;');
+  const dlOk = w.__dl('time');
+  ok(dlOk && w.document.getElementById('quizScreen').classList.contains('on')
+        && /Time World/.test(w.document.getElementById('worldName').textContent),
+     'deep link ?world=time opens Time World directly');
+  ok(!w.__dl('nonsense'), 'deep link rejects unknown world keys');
 } catch (e) { ok(false, 'Quest threw: ' + e.message); }
 
 // ============================ Word-and-Math-Blaster.html ============================

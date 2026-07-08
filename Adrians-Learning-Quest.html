@@ -1130,6 +1130,13 @@ function startRound(world){
    18 questions (2 per world, interleaved), difficulty moves up after a correct
    answer and down after a miss (one step per question, like a CAT), no right/
    wrong feedback during the test, untimed. Ends with the progress report. */
+function openWorldDeepLink(key){
+  if(!BANKS[key]) return false;
+  startGame();
+  startRound(key);
+  return true;
+}
+
 var checkup = null;
 function startCheckup(){
   const worlds=Object.keys(BANKS);
@@ -1301,6 +1308,11 @@ function burst(){
   const vt=$('voiceTest'); if(vt) vt.addEventListener('click',()=>say('Hi! Let us learn together.', {pitch:1.1}));
   loadVoices();
   try{ if(window.speechSynthesis) window.speechSynthesis.onvoiceschanged=loadVoices; }catch(e){}
+  // deep link from the galaxy launcher: index.html planets link to ?world=<key>
+  try{
+    const wp=new URLSearchParams(location.search).get('world');
+    if(wp) openWorldDeepLink(wp);
+  }catch(e){}
   // offline/app support (no-op under the harness and on file://)
   try{ if('serviceWorker' in navigator && /^https?:/.test(location.protocol)) navigator.serviceWorker.register('sw.js'); }catch(e){}
 
