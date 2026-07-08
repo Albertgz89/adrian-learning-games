@@ -1225,8 +1225,13 @@ function playClips(list,text,opts){
   a.onended=function(){ if(i<list.length){ a.src=list[i++]; var p=a.play(); if(p&&p.catch) p.catch(function(){}); } };
   try{
     a.pause(); a.muted=false; a.src=list[i++];
+    var started=false, failed=false;
     var p=a.play();
-    if(p&&p.catch) p.catch(function(){ speakTTS(text,opts); });
+    if(p&&p.then) p.then(function(){ started=true; }).catch(function(){ failed=true; speakTTS(text,opts); });
+    setTimeout(function(){
+      // watchdog: if the clip never started (stalled load), speak instead of silence
+      if(!started && !failed && a.readyState<2){ try{ a.pause(); }catch(e){} speakTTS(text,opts); }
+    },1200);
   }catch(e){ speakTTS(text,opts); }
 }
 function say(text, opts){

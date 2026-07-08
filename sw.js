@@ -1,6 +1,6 @@
 // Service worker — makes the games installable and fully playable offline.
 // Bump CACHE_VERSION whenever any game file changes so iPads pick up updates.
-const CACHE_VERSION = 'adrian-games-v17';
+const CACHE_VERSION = 'adrian-games-v18';
 const ASSETS = [
   './',
   './index.html',
@@ -78,6 +78,22 @@ self.addEventListener('activate', (e) => {
 // Network-first, cache fallback: updates flow in when online, games still open offline.
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
+  // Media elements request byte ranges; proxying those through the SW stalls
+  // playback in Chrome/Safari. Serve audio cache-first as a full 200 response
+  // (small files — browsers accept this for <audio>), refreshing from network.
+  if (/\.(m4a|mp3|wav)(\?|$)/.test(new URL(e.request.url).pathname)) {
+    e.respondWith(
+      caches.match(e.request.url, { ignoreSearch: true }).then((hit) => {
+        const net = fetch(e.request.url).then((res) => {
+          const copy = res.clone();
+          caches.open(CACHE_VERSION).then((c) => c.put(e.request.url, copy)).catch(() => {});
+          return res;
+        });
+        return hit || net;
+      })
+    );
+    return;
+  }
   e.respondWith(
     fetch(e.request)
       .then((res) => {
