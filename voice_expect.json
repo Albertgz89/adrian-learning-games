@@ -105,7 +105,7 @@
   "w-ship.m4a": "ship",
   "w-moon.m4a": "moon",
   "w-tree.m4a": "tree",
-  "w-bird.m4a": "bird",
+  "w-bird.m4a": "bird bird",
   "w-lion.m4a": "lion",
   "w-bear.m4a": "bear bear",
   "w-door.m4a": "door",
@@ -609,6 +609,11 @@
   ],
   "what time will the clock show in 1 hour": [
    "what time will the clock show in one hour"
+  ],
+  "bird bird": [
+   "bird",
+   "birdbird",
+   "bird bird bird"
   ]
  }
 }
