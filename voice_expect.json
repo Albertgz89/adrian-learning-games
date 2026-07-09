@@ -44,7 +44,7 @@
   "w-the.m4a": "the",
   "w-and.m4a": "and",
   "w-you.m4a": "you",
-  "w-was.m4a": "was",
+  "w-was.m4a": "was was",
   "w-for.m4a": "for",
   "w-are.m4a": "are",
   "w-they.m4a": "they",
@@ -597,6 +597,18 @@
    "zed zed",
    "zee zee",
    "zz"
+  ],
+  "was was": [
+   "wa was",
+   "was",
+   "was wa",
+   "was was was",
+   "waz waz",
+   "woz woz",
+   "wuz wuz"
+  ],
+  "what time will the clock show in 1 hour": [
+   "what time will the clock show in one hour"
   ]
  }
 }
