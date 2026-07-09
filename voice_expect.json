@@ -1,0 +1,602 @@
+{
+ "expect": {
+  "awesome.m4a": "Awesome!",
+  "super.m4a": "Super!",
+  "you-got-it.m4a": "You got it!",
+  "brilliant.m4a": "Brilliant!",
+  "way-to-go.m4a": "Way to go!",
+  "amazing.m4a": "Amazing!",
+  "blast-off.m4a": "Blast off!",
+  "star-power.m4a": "Star power!",
+  "to-the-moon.m4a": "To the moon!",
+  "boom.m4a": "Boom!",
+  "direct-hit.m4a": "Direct hit!",
+  "home-run.m4a": "Home run!",
+  "grand-slam.m4a": "Grand slam!",
+  "out-of-the-park.m4a": "Out of the park!",
+  "birdie.m4a": "Birdie!",
+  "hole-in-one.m4a": "Hole in one!",
+  "great-swing.m4a": "Great swing!",
+  "caught-it.m4a": "Caught it!",
+  "gotcha.m4a": "Gotcha!",
+  "super-catch.m4a": "Super catch!",
+  "level-up.m4a": "Level up!",
+  "wonderful-writing.m4a": "Wonderful writing!",
+  "stem-find.m4a": "Find the word...",
+  "stem-spell.m4a": "spell the word",
+  "stem-missing.m4a": "Which letter is missing in...",
+  "stem-spelled.m4a": "You spelled...",
+  "what-time-does-the-clock-show.m4a": "What time does the clock show?",
+  "what-time-will-the-clock-show-in-1-hour.m4a": "What time will the clock show in 1 hour?",
+  "look-at-the-picture-is-it-morning-or-night.m4a": "Look at the picture. Is it morning or night?",
+  "which-season-does-this-picture-show.m4a": "Which season does this picture show?",
+  "how-much-money-is-here.m4a": "How much money is here?",
+  "how-much-is-a-penny-worth.m4a": "How much is a penny worth?",
+  "how-much-is-a-nickel-worth.m4a": "How much is a nickel worth?",
+  "how-much-is-a-dime-worth.m4a": "How much is a dime worth?",
+  "how-much-is-a-quarter-worth.m4a": "How much is a quarter worth?",
+  "how-many-days-are-in-one-week.m4a": "How many days are in one week?",
+  "how-many-months-are-in-one-year.m4a": "How many months are in one year?",
+  "check-up-time-just-try-your-best-there-are-no-wrong-answers-here.m4a": "Check up time! Just try your best. There are no wrong answers here.",
+  "check-up-done-amazing-work.m4a": "Check up done! Amazing work!",
+  "try-the-right-answer.m4a": "Try the right answer",
+  "great-reading.m4a": "Great reading!",
+  "w-the.m4a": "the",
+  "w-and.m4a": "and",
+  "w-you.m4a": "you",
+  "w-was.m4a": "was",
+  "w-for.m4a": "for",
+  "w-are.m4a": "are",
+  "w-they.m4a": "they",
+  "w-said.m4a": "said",
+  "w-have.m4a": "have",
+  "w-with.m4a": "with",
+  "w-this.m4a": "this",
+  "w-that.m4a": "that",
+  "w-what.m4a": "what",
+  "w-little.m4a": "little",
+  "w-here.m4a": "here",
+  "w-where.m4a": "where",
+  "w-come.m4a": "come",
+  "w-some.m4a": "some some",
+  "w-one.m4a": "one",
+  "w-two.m4a": "two",
+  "w-like.m4a": "like",
+  "w-see.m4a": "see",
+  "w-can.m4a": "can",
+  "w-play.m4a": "play",
+  "w-went.m4a": "went",
+  "w-look.m4a": "look",
+  "w-who.m4a": "who",
+  "w-away.m4a": "away",
+  "w-cat.m4a": "cat",
+  "w-dog.m4a": "dog",
+  "w-sun.m4a": "sun sun",
+  "w-bed.m4a": "bed",
+  "w-pig.m4a": "pig",
+  "w-hat.m4a": "hat hat",
+  "w-bus.m4a": "bus bus",
+  "w-box.m4a": "box",
+  "w-fox.m4a": "fox",
+  "w-egg.m4a": "egg",
+  "w-ant.m4a": "ant ant",
+  "w-bee.m4a": "bee",
+  "w-car.m4a": "car",
+  "w-key.m4a": "key",
+  "w-map.m4a": "map",
+  "w-pen.m4a": "pen",
+  "w-ear.m4a": "ear",
+  "w-owl.m4a": "owl owl",
+  "w-cow.m4a": "cow cow",
+  "w-hen.m4a": "hen hen",
+  "w-bug.m4a": "bug",
+  "w-cup.m4a": "cup",
+  "w-fish.m4a": "fish",
+  "w-frog.m4a": "frog",
+  "w-star.m4a": "star",
+  "w-drum.m4a": "drum",
+  "w-milk.m4a": "milk",
+  "w-corn.m4a": "corn",
+  "w-duck.m4a": "duck",
+  "w-bell.m4a": "bell",
+  "w-ring.m4a": "ring",
+  "w-sock.m4a": "sock sock",
+  "w-crab.m4a": "crab",
+  "w-ship.m4a": "ship",
+  "w-moon.m4a": "moon",
+  "w-tree.m4a": "tree",
+  "w-bird.m4a": "bird",
+  "w-lion.m4a": "lion",
+  "w-bear.m4a": "bear bear",
+  "w-door.m4a": "door",
+  "w-fire.m4a": "fire",
+  "w-leaf.m4a": "leaf",
+  "w-cake.m4a": "cake",
+  "w-bike.m4a": "bike bike",
+  "w-boat.m4a": "boat",
+  "w-rain.m4a": "rain",
+  "w-kite.m4a": "kite",
+  "w-snake.m4a": "snake",
+  "w-grape.m4a": "grape",
+  "w-train.m4a": "train",
+  "w-goat.m4a": "goat",
+  "w-whale.m4a": "whale",
+  "w-bone.m4a": "bone",
+  "w-rose.m4a": "rose",
+  "w-feet.m4a": "feet",
+  "w-seed.m4a": "seed",
+  "w-nose.m4a": "nose",
+  "w-clock.m4a": "clock",
+  "w-bread.m4a": "bread",
+  "w-cloud.m4a": "cloud",
+  "w-tiger.m4a": "tiger",
+  "w-mouse.m4a": "mouse",
+  "w-house.m4a": "house",
+  "w-plane.m4a": "plane",
+  "w-sheep.m4a": "sheep",
+  "w-spoon.m4a": "spoon",
+  "w-zebra.m4a": "zebra",
+  "w-apple.m4a": "apple",
+  "w-smile.m4a": "smile",
+  "stem-goodtry.m4a": "Good try! The answer is...",
+  "az-stem-findletter.m4a": "Find the letter...",
+  "az-stem-smallletter.m4a": "Find the small letter...",
+  "az-stem-bigletter.m4a": "Find the big letter...",
+  "az-stem-findnumber.m4a": "Find the number...",
+  "az-stem-starts.m4a": "Which letter starts the word...",
+  "az-stem-rhyme.m4a": "Which picture rhymes with...",
+  "az-q-count.m4a": "Count the dinosaurs! How many do you see?",
+  "az-q-next.m4a": "What comes next in the pattern?",
+  "az-q-name.m4a": "Spell your name! Tap the letters!",
+  "az-welcome.m4a": "Welcome to Dino Quest!",
+  "az-chooseworld.m4a": "Pick a dino world!",
+  "az-newcard.m4a": "Wow! A new dino card!",
+  "az-dinomite.m4a": "Dino-mite!",
+  "az-rawr.m4a": "Rawr! You did it!",
+  "az-stomp.m4a": "Stomp stomp hooray!",
+  "az-dinopower.m4a": "Dino power!",
+  "az-smartdino.m4a": "You are one smart dino!",
+  "az-mightyroar.m4a": "What a mighty roar!",
+  "az-greatjob.m4a": "Great job, Aziel!",
+  "az-waytogo.m4a": "Way to go, Aziel!",
+  "az-color-red.m4a": "Tap the red dinosaur!",
+  "az-color-blue.m4a": "Tap the blue dinosaur!",
+  "az-color-yellow.m4a": "Tap the yellow dinosaur!",
+  "az-color-green.m4a": "Tap the green dinosaur!",
+  "az-color-orange.m4a": "Tap the orange dinosaur!",
+  "az-color-purple.m4a": "Tap the purple dinosaur!",
+  "az-color-pink.m4a": "Tap the pink dinosaur!",
+  "az-color-brown.m4a": "Tap the brown dinosaur!",
+  "az-color-black.m4a": "Tap the black dinosaur!",
+  "az-color-white.m4a": "Tap the white dinosaur!",
+  "az-shape-circle.m4a": "Which one is the circle?",
+  "az-shape-square.m4a": "Which one is the square?",
+  "az-shape-triangle.m4a": "Which one is the triangle?",
+  "az-shape-star.m4a": "Which one is the star?",
+  "az-shape-heart.m4a": "Which one is the heart?",
+  "az-shape-rectangle.m4a": "Which one is the rectangle?",
+  "az-shape-oval.m4a": "Which one is the oval?",
+  "az-shape-diamond.m4a": "Which one is the diamond?",
+  "l-a.m4a": "A!",
+  "l-b.m4a": "B!",
+  "l-c.m4a": "C!",
+  "l-d.m4a": "D!",
+  "l-e.m4a": "E!",
+  "l-f.m4a": "f f",
+  "l-g.m4a": "G!",
+  "l-h.m4a": "H!",
+  "l-i.m4a": "i i",
+  "l-j.m4a": "J!",
+  "l-k.m4a": "K!",
+  "l-l.m4a": "L!",
+  "l-m.m4a": "m m",
+  "l-n.m4a": "n n",
+  "l-o.m4a": "O!",
+  "l-p.m4a": "P!",
+  "l-q.m4a": "q q",
+  "l-r.m4a": "r r",
+  "l-s.m4a": "s s",
+  "l-t.m4a": "T!",
+  "l-u.m4a": "U!",
+  "l-v.m4a": "V!",
+  "l-w.m4a": "W!",
+  "l-x.m4a": "X!",
+  "l-y.m4a": "Y!",
+  "l-z.m4a": "z z",
+  "n-1.m4a": "One!",
+  "n-2.m4a": "Two!",
+  "n-3.m4a": "Three!",
+  "n-4.m4a": "Four!",
+  "n-5.m4a": "Five!",
+  "n-6.m4a": "Six!",
+  "n-7.m4a": "Seven!",
+  "n-8.m4a": "Eight!",
+  "n-9.m4a": "Nine!",
+  "n-10.m4a": "Ten!",
+  "n-11.m4a": "Eleven!",
+  "n-12.m4a": "Twelve!",
+  "n-13.m4a": "Thirteen!",
+  "n-14.m4a": "Fourteen!",
+  "n-15.m4a": "Fifteen!",
+  "n-16.m4a": "Sixteen!",
+  "n-17.m4a": "Seventeen!",
+  "n-18.m4a": "Eighteen!",
+  "n-19.m4a": "Nineteen!",
+  "n-20.m4a": "Twenty!",
+  "az-q-missingname.m4a": "Which letter is missing in your name?",
+  "az-q-bigger.m4a": "Which number is bigger?"
+ },
+ "aliases": {
+  "sun": [
+   "son"
+  ],
+  "bee": [
+   "b"
+  ],
+  "one": [
+   "1",
+   "won"
+  ],
+  "ant": [
+   "aunt"
+  ],
+  "are": [
+   "our",
+   "r"
+  ],
+  "you spelled": [
+   "you spelt"
+  ],
+  "birdie": [
+   "birdy"
+  ],
+  "caught it": [
+   "caught it",
+   "cot it"
+  ],
+  "said": [
+   "sed"
+  ],
+  "the": [
+   "duh",
+   "the",
+   "thee"
+  ],
+  "good try the answer is": [
+   "good try the answer is"
+  ],
+  "dinomite": [
+   "dino might",
+   "dino mite",
+   "dynamite"
+  ],
+  "rawr you did it": [
+   "rar you did it",
+   "raw you did it",
+   "roar you did it"
+  ],
+  "stomp stomp hooray": [
+   "stomp stomp horray",
+   "stomp stomp hurray"
+  ],
+  "great job aziel": [
+   "great job a zeal",
+   "great job ah zee el",
+   "great job as eel",
+   "great job azeal",
+   "great job azeel",
+   "great job azel",
+   "great job aziel",
+   "great job azielle",
+   "great job azil",
+   "great job azile",
+   "great job azzielle",
+   "great job eziel",
+   "great job ozil"
+  ],
+  "way to go aziel": [
+   "way to go a zeal",
+   "way to go azeal",
+   "way to go azeel",
+   "way to go azel",
+   "way to go azielle",
+   "way to go azil",
+   "way to go eziel",
+   "way to go ozil"
+  ],
+  "a": [
+   "ay",
+   "eh",
+   "hey"
+  ],
+  "b": [
+   "be",
+   "bee"
+  ],
+  "c": [
+   "sea",
+   "see"
+  ],
+  "d": [
+   "de",
+   "dee"
+  ],
+  "e": [
+   "ee"
+  ],
+  "f": [
+   "ef",
+   "eff"
+  ],
+  "g": [
+   "gee",
+   "je"
+  ],
+  "h": [
+   "age",
+   "aitch",
+   "h"
+  ],
+  "i": [
+   "aye",
+   "eye"
+  ],
+  "j": [
+   "jay",
+   "jei"
+  ],
+  "k": [
+   "cay",
+   "kay",
+   "okay"
+  ],
+  "l": [
+   "al",
+   "el",
+   "elle"
+  ],
+  "m": [
+   "em",
+   "im"
+  ],
+  "n": [
+   "en",
+   "in"
+  ],
+  "o": [
+   "oh",
+   "owe"
+  ],
+  "p": [
+   "pea",
+   "pee"
+  ],
+  "q": [
+   "cue",
+   "kyu",
+   "queue"
+  ],
+  "r": [
+   "ar",
+   "are",
+   "arr"
+  ],
+  "s": [
+   "es",
+   "ess"
+  ],
+  "t": [
+   "tea",
+   "tee"
+  ],
+  "u": [
+   "ewe",
+   "you",
+   "yu"
+  ],
+  "v": [
+   "ve",
+   "vee"
+  ],
+  "w": [
+   "double u",
+   "double you",
+   "w"
+  ],
+  "x": [
+   "ex",
+   "x"
+  ],
+  "y": [
+   "why",
+   "y"
+  ],
+  "z": [
+   "ze",
+   "zed",
+   "zee"
+  ],
+  "two": [
+   "2",
+   "to",
+   "too"
+  ],
+  "three": [
+   "3"
+  ],
+  "four": [
+   "4",
+   "for",
+   "fore"
+  ],
+  "five": [
+   "5"
+  ],
+  "six": [
+   "6"
+  ],
+  "seven": [
+   "7"
+  ],
+  "eight": [
+   "8",
+   "ate"
+  ],
+  "nine": [
+   "9"
+  ],
+  "ten": [
+   "10"
+  ],
+  "eleven": [
+   "11"
+  ],
+  "twelve": [
+   "12"
+  ],
+  "thirteen": [
+   "13"
+  ],
+  "fourteen": [
+   "14"
+  ],
+  "fifteen": [
+   "15"
+  ],
+  "sixteen": [
+   "16"
+  ],
+  "seventeen": [
+   "17"
+  ],
+  "eighteen": [
+   "18"
+  ],
+  "nineteen": [
+   "19"
+  ],
+  "twenty": [
+   "20"
+  ],
+  "which one is the oval": [
+   "which one is the oval"
+  ],
+  "welcome to dino quest": [
+   "welcome to dinoquest",
+   "welcome to dyno quest",
+   "welcome to dynoquest"
+  ],
+  "wow a new dino card": [
+   "wow a new dinocard",
+   "wow a new dyno card",
+   "wow a new dynocard"
+  ],
+  "ant ant": [
+   "and ant",
+   "ant",
+   "ant and",
+   "aunt aunt"
+  ],
+  "bear bear": [
+   "bear",
+   "bear bear bear",
+   "bearbear"
+  ],
+  "bike bike": [
+   "a bike a bike",
+   "bike",
+   "bike a bike",
+   "bike bike bike",
+   "bikebike"
+  ],
+  "bus bus": [
+   "bus",
+   "busbus"
+  ],
+  "cow cow": [
+   "cow",
+   "cowcow"
+  ],
+  "hat hat": [
+   "hat",
+   "hathat"
+  ],
+  "hen hen": [
+   "hen",
+   "henhen"
+  ],
+  "owl owl": [
+   "owl",
+   "owlowl"
+  ],
+  "sock sock": [
+   "sock",
+   "socksock"
+  ],
+  "some some": [
+   "some",
+   "somesome",
+   "sum sum"
+  ],
+  "sun sun": [
+   "son son",
+   "sun",
+   "sunsun"
+  ],
+  "spell the word": [
+   "spell a word",
+   "spell the whered",
+   "spell the word"
+  ],
+  "f f": [
+   "eff",
+   "eff eff",
+   "f",
+   "f f f",
+   "ff"
+  ],
+  "i i": [
+   "aye aye",
+   "eye eye",
+   "i",
+   "i i i",
+   "ii"
+  ],
+  "m m": [
+   "em em",
+   "m",
+   "m m m",
+   "mm"
+  ],
+  "n n": [
+   "en en",
+   "n",
+   "n n n",
+   "nn"
+  ],
+  "q q": [
+   "cue cue",
+   "q",
+   "qq",
+   "queue queue"
+  ],
+  "r r": [
+   "are are",
+   "arr arr",
+   "r",
+   "rr"
+  ],
+  "s s": [
+   "es es",
+   "ess ess",
+   "s",
+   "ss"
+  ],
+  "z z": [
+   "z",
+   "zed zed",
+   "zee zee",
+   "zz"
+  ]
+ }
+}

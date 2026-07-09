@@ -539,7 +539,9 @@ try {
   w.eval('window.__WC = Object.keys(WORD_CLIPS); window.__PC = PROMPT_CLIPS;');
   const missW = w.__WC.filter(k => !fs.existsSync(path.join(DIR, 'art/audio/w-' + k + '.m4a')));
   const missP = Object.values(w.__PC).filter(p => !fs.existsSync(path.join(DIR, p)));
-  const missS = ['stem-find','stem-spell','stem-missing','stem-spelled'].filter(n => !fs.existsSync(path.join(DIR, 'art/audio/' + n + '.m4a')));
+  const missS = ['stem-find','stem-spell','stem-missing','stem-spelled','stem-goodtry'].filter(n => !fs.existsSync(path.join(DIR, 'art/audio/' + n + '.m4a')));
+  w.say('Good try. The answer is cat');
+  ok((w.say._last || '').indexOf('w-cat.m4a') >= 0, 'say() chains "Good try. The answer is…" + word clip (Luna feedback on wrong answers)');
   ok(missW.length === 0 && missP.length === 0 && missS.length === 0,
      'full voice pack on disk: ' + w.__WC.length + ' words + ' + Object.keys(w.__PC).length + ' prompts + 4 stems (missing: ' + (missW.length + missP.length + missS.length) + ')');
   // Ball sprite plumbing: target art preloader exists with fallback intact.
@@ -596,6 +598,230 @@ try {
   ok(w.__CO.stars() === wStars + 1 && writData && writData.c >= 1,
      'a good sentence earns a star and logs to the Writing report domain');
 } catch (e) { ok(false, 'Blaster threw: ' + e.message); }
+
+// ============================ Aziels-Dino-Quest.html ============================
+section('Aziels-Dino-Quest.html');
+try {
+  const { window: w, errors } = loadGame('Aziels-Dino-Quest.html');
+  ok(errors.length === 0, 'loads with no script errors' + (errors.length ? ': ' + errors.join(' | ') : ''));
+  w.eval('window.__A = { get BANKS(){return BANKS}, get cur(){return cur}, get COLLECT(){return COLLECT}, get REPORT(){return REPORT}, get checkup(){return checkup} };');
+  const A = w.__A;
+  w.startGame();
+  const worlds = Object.keys(A.BANKS);
+  ok(worlds.length === 9 &&
+     ['letters','sounds','counting','numbers','shapes','colors','patterns','rhyme','name'].every(k => worlds.includes(k)),
+     'has 9 pre-K worlds: ' + worlds.join(', '));
+
+  // Full playthrough: buttons carry data-val (answers can be pictures/SVG), right
+  // answer always present, no duplicate choices, 3-4 choices, every question spoken.
+  let broken = 0, answered = 0, sayMissing = 0, badCount = 0;
+  for (const k of worlds) {
+    for (let round = 0; round < 8; round++) {
+      w.startRound(k);
+      for (let i = 0; i < 5; i++) {
+        const q = A.cur.q;
+        const btns = [...w.document.querySelectorAll('#answers .ans')];
+        const vals = btns.map(b => b.dataset.val);
+        if (new Set(vals).size !== vals.length) { broken++; console.log('     dup choices in ' + k + ': ' + vals.join(',')); }
+        if (vals.length < 3 || vals.length > 4) { badCount++; console.log('     ' + k + ' has ' + vals.length + ' choices'); }
+        if (!(q.say || q.q)) sayMissing++;
+        const right = btns.find(b => b.dataset.val === q.right);
+        if (!right) { broken++; console.log('     ' + k + ' missing right "' + q.right + '" among [' + vals.join(',') + ']'); }
+        else { right.click(); answered++; }
+        A.cur.i++; w.nextQuestion();
+      }
+    }
+  }
+  ok(broken === 0, 'all 9 worlds answerable, right answer always present, no duplicates (' + answered + ' questions)');
+  ok(badCount === 0, 'every question offers 3-4 choices (3 at the easiest levels)');
+  ok(sayMissing === 0, 'every question carries spoken-prompt text (audio-first)');
+  ok(!!w.document.getElementById('sayBtn'), 'big 🔊 "Say it again" button exists');
+  ok(!!w.document.querySelector('#homeBtn[href="index.html"]'), '🏠 Games button links back to the launcher');
+
+  // Separate profile: Aziel saves under azq-*, never touching Adrian's alg-*/alq-* keys.
+  ok(parseInt(w.localStorage.getItem('azq-stars') || '0', 10) > 0, 'stars persist under azq-stars');
+  ok(w.localStorage.getItem('alg-stars') === null && w.localStorage.getItem('alg-report') === null,
+     "Adrian's alg-* keys untouched by Aziel's game (separate profiles)");
+  ok(!!w.localStorage.getItem('azq-report'), 'report data persists under azq-report');
+
+  // Adaptive difficulty: 3 correct in a row levels up, a miss levels down.
+  w.eval('localStorage.setItem("azq-lvl-counting","4"); streaks={};');
+  w.eval('onCorrectAdapt("counting");onCorrectAdapt("counting");onCorrectAdapt("counting");');
+  ok(w.eval('getLevel("counting")') === 5, '3 correct answers in a row level a world up');
+  w.eval('onWrongAdapt("counting");');
+  ok(w.eval('getLevel("counting")') === 4, 'a wrong answer eases the level back down');
+
+  // ---- FACT AUDIT: re-verify generated questions against independent truth tables ----
+  w.eval('window.__gL=genLetters; window.__gS=genSounds; window.__gC=genCounting; window.__gN=genNumbers;'
+       + 'window.__gH=genShapes; window.__gO=genColors; window.__gP=genPatterns; window.__gR=genRhyme; window.__gM=genName;');
+
+  // Counting: the number of dinosaurs drawn must equal the right answer, always.
+  let cntOk = true, cntSmall = true;
+  for (let lvl = 1; lvl <= 9; lvl++) for (let i = 0; i < 200; i++) {
+    const q = w.__gC(lvl);
+    const m = (q.picHTML || '').match(/data-count="(\d+)"/);
+    if (!m || String(q.count) !== q.right || m[1] !== q.right) cntOk = false;
+    const icons = (q.picHTML || '').replace(/<[^>]*>/g, '');
+    const iconChar = [...icons][0];
+    const shown = icons.split(iconChar).length - 1;
+    if (shown !== parseInt(q.right, 10)) cntOk = false;
+    if (q.choices.indexOf(q.right) < 0 || new Set(q.choices).size !== q.choices.length) cntOk = false;
+    if (lvl <= 3 && q.choices.length !== 3) cntSmall = false;
+    if (q.choices.some(c => parseInt(c, 10) < 1)) cntOk = false;
+  }
+  ok(cntOk, 'FACT AUDIT counting: dinosaurs drawn always equals the right answer (1800 questions)');
+  ok(cntSmall, 'FACT AUDIT counting: easiest levels stick to 3 choices');
+
+  // Patterns: recompute the next element from the repeating unit independently.
+  let patOk = true;
+  for (let lvl = 1; lvl <= 9; lvl++) for (let i = 0; i < 200; i++) {
+    const q = w.__gP(lvl);
+    const expect = q.unit[q.seq.length % q.unit.length];
+    if (q.right !== expect) patOk = false;
+    if (q.choices.indexOf(q.right) < 0 || new Set(q.choices).size !== q.choices.length) patOk = false;
+    for (let s = 0; s < q.seq.length; s++) if (q.seq[s] !== q.unit[s % q.unit.length]) patOk = false;
+  }
+  ok(patOk, 'FACT AUDIT patterns: the right answer is exactly what the repeating unit predicts (1800 questions)');
+
+  // Rhyme: independent rime table — right must share the prompt's rime, distractors must not.
+  const RIME = { cat:'at',hat:'at', bee:'ee',tree:'ee',key:'ee', car:'ar',star:'ar', cake:'ake',snake:'ake',
+                 moon:'oon',spoon:'oon', box:'ox',fox:'ox', goat:'oat',boat:'oat', hen:'en',pen:'en',
+                 rain:'ain',train:'ain',plane:'ain', dog:'og',frog:'og', mouse:'ouse',house:'ouse' };
+  let rhyOk = true;
+  for (let lvl = 1; lvl <= 9; lvl++) for (let i = 0; i < 200; i++) {
+    const q = w.__gR(lvl);
+    if (!RIME[q.prompt] || RIME[q.right] !== RIME[q.prompt]) rhyOk = false;
+    if (q.choices.indexOf(q.prompt) >= 0) rhyOk = false;
+    for (const c of q.choices) { if (c !== q.right && RIME[c] === RIME[q.prompt]) rhyOk = false; }
+    if (q.choices.indexOf(q.right) < 0 || new Set(q.choices).size !== q.choices.length) rhyOk = false;
+  }
+  ok(rhyOk, 'FACT AUDIT rhyming: answer rhymes with the prompt, no distractor does, prompt never a choice (1800 questions)');
+
+  // Beginning sounds: the right letter IS the word's first letter; no distractor matches it.
+  let sndOk = true;
+  for (let lvl = 1; lvl <= 9; lvl++) for (let i = 0; i < 200; i++) {
+    const q = w.__gS(lvl);
+    if (q.right !== q.word[0].toUpperCase()) sndOk = false;
+    if (q.choices.filter(c => c === q.right).length !== 1) sndOk = false;
+    if (!/^art\/word-[a-z]+\.jpg$/.test(q.pic || '')) sndOk = false;
+    if (new Set(q.choices).size !== q.choices.length) sndOk = false;
+  }
+  ok(sndOk, 'FACT AUDIT beginning sounds: right letter always starts the pictured word (1800 questions)');
+
+  // Name: the missing tile really is that letter of the saved name.
+  let nameOk = true;
+  for (let lvl = 1; lvl <= 9; lvl++) for (let i = 0; i < 200; i++) {
+    const q = w.__gM(lvl);
+    const mn = (q.picHTML || '').match(/data-name="([A-Z]+)" data-pos="(\d+)"/);
+    if (!mn || mn[1][+mn[2]] !== q.right) nameOk = false;
+    if (q.choices.indexOf(q.right) < 0 || new Set(q.choices).size !== q.choices.length) nameOk = false;
+  }
+  ok(nameOk, 'FACT AUDIT name: the blank tile always matches the letter of the saved name (1800 questions)');
+
+  // Numbers: "which is bigger" answers must be the true maximum; find-the-number in range.
+  let numOk = true, sawCompare = false;
+  for (let lvl = 1; lvl <= 9; lvl++) for (let i = 0; i < 200; i++) {
+    const q = w.__gN(lvl);
+    if (q.compare) { sawCompare = true;
+      if (parseInt(q.right, 10) !== Math.max(...q.choices.map(Number))) numOk = false; }
+    if (q.choices.indexOf(q.right) < 0 || new Set(q.choices).size !== q.choices.length) numOk = false;
+    const n = parseInt(q.right, 10); if (isNaN(n) || n < 1 || n > 20) numOk = false;
+  }
+  ok(numOk && sawCompare, 'FACT AUDIT numbers: 1-20 range, comparisons always pick the true maximum');
+
+  // Letters / shapes / colors: right present, pools honest, colors all mapped to real hexes.
+  let letOk = true, shpOk = true, clrOk = true;
+  const HEX = w.eval('COLOR_HEX');
+  for (let lvl = 1; lvl <= 9; lvl++) for (let i = 0; i < 200; i++) {
+    const ql = w.__gL(lvl);
+    if (ql.choices.indexOf(ql.right) < 0 || new Set(ql.choices).size !== ql.choices.length) letOk = false;
+    if (!/^[A-Za-z]$/.test(ql.right)) letOk = false;
+    const qs = w.__gH(lvl);
+    if (qs.choices.indexOf(qs.right) < 0 || new Set(qs.choices).size !== qs.choices.length) shpOk = false;
+    if (!/svg/.test(qs.render(qs.right))) shpOk = false;
+    const qc = w.__gO(lvl);
+    if (qc.choices.indexOf(qc.right) < 0 || new Set(qc.choices).size !== qc.choices.length) clrOk = false;
+    for (const c of qc.choices) if (!HEX[c]) clrOk = false;
+  }
+  ok(letOk, 'FACT AUDIT letters: right letter always among unique choices (1800 questions)');
+  ok(shpOk, 'FACT AUDIT shapes: every choice renders real SVG art, right always present');
+  ok(clrOk, 'FACT AUDIT colors: every color choice has real dino art in a distinct hex');
+
+  // Dino card collection: 20 original cards, rarity/HP/moves/holo, booster every 8 stars.
+  const CO = A.COLLECT;
+  ok(CO.PACK === 8 && CO.total() === 20 && Object.keys(CO.SETS).length === 2,
+     'collection: 2 series × 10 = 20 dino cards, pack every 8 stars');
+  ok(CO.SETS.dino.names.length === 10 && CO.SETS.dino2.names.length === 10 &&
+     new Set(CO.SETS.dino.names.concat(CO.SETS.dino2.names)).size === 20,
+     'all 20 dino names unique and original: ' + CO.SETS.dino.names.slice(0,3).join(', ') + '…');
+  const rar = [CO.rarity(0).label, CO.rarity(5).label, CO.rarity(8).label, CO.rarity(9).label];
+  ok(rar.join(',') === 'COMMON,RARE,EPIC,LEGENDARY', 'card rarity tiers: ' + rar.join(' → '));
+  const cardHtml = CO.cardHTML('dino', 9, null);
+  ok(/HP \d+/.test(cardHtml) && /tcgMove/.test(cardHtml) && /sheen/.test(cardHtml) && /LEGENDARY/.test(cardHtml),
+     'legendary card has HP, two moves and the holo sheen');
+  ok(!/sheen/.test(CO.cardHTML('dino', 0, null)), 'common cards have no holo sheen');
+  w.eval('localStorage.setItem("azq-stars","7"); localStorage.setItem("azq-collection","{}");');
+  const before = CO.count(); CO.addStar();
+  ok(CO.count() === before + 1, 'the 8th star opens a booster pack and unlocks a card');
+  ok(/art\/dino-3\.jpg/.test(CO.itemArt('dino',3)) && /art\/dino2-7\.jpg/.test(CO.itemArt('dino2',7)),
+     'cards use generated art (art/dino-*.jpg) with SVG fallback');
+
+  // Kindergarten-readiness report on the separate Aziel profile.
+  const R = A.REPORT;
+  ok(Object.keys(R.DOMAINS).length === 9 && R.DOMAINS.LET && R.DOMAINS.CNT && R.DOMAINS.WRT,
+     'report tracks 9 K-readiness domains');
+  ok(R.PLACEMENTS.includes('Kindergarten Ready!'), 'placements speak pre-K → K readiness');
+  R.show();
+  const repHTML = w.document.getElementById('repBook').innerHTML;
+  ok(/Readiness/.test(repHTML) && /not an official/.test(repHTML) && /separately from Adrian/.test(repHTML),
+     'parent report renders with the unofficial disclaimer and per-kid note');
+  R.hide();
+
+  // Check-Up: 18 interleaved questions, neutral feedback, sets levels + opens report.
+  w.document.getElementById('checkupBtn').click();
+  ok(!!A.checkup && A.checkup.total === 18, 'Check-Up runs 18 questions (2 per world)');
+  let neutral = true;
+  for (let i = 0; i < 18 && A.checkup; i++) {
+    const q = A.cur.q;
+    const btns = [...w.document.querySelectorAll('#answers .ans')];
+    (btns.find(b => b.dataset.val === q.right) || btns[0]).click();
+    const fbEl = w.document.getElementById('feedback');
+    if (/Try the green|Level up/.test(fbEl.textContent)) neutral = false;
+    if (btns.some(b => b.classList.contains('right') || b.classList.contains('wrong'))) neutral = false;
+    w.nextQuestion();
+  }
+  ok(neutral, 'Check-Up never reveals right/wrong (diagnostic style)');
+  ok(A.checkup === null && w.document.getElementById('repBook').classList.contains('on'),
+     'Check-Up finishes, saves levels and opens the readiness report');
+
+  // Voice pack wiring: every fixed prompt/cheer resolves to a real clip on disk.
+  w.eval('window.__clips = (function(){ const l=[];'
+    + 'for(const k in AUDIO_PACK) l.push(AUDIO_PACK[k]);'
+    + 'for(const k in PROMPT_CLIPS) l.push(PROMPT_CLIPS[k]);'
+    + 'for(const k in LETTER_CLIPS) l.push(LETTER_CLIPS[k]);'
+    + 'for(const k in NUMBER_CLIPS) l.push(NUMBER_CLIPS[k]);'
+    + 'for(const s of STEMS) l.push(s[1]);'
+    + 'return l; })();');
+  const clipList = [...new Set(w.__clips)];
+  const missingClips = clipList.filter(p => !fs.existsSync(path.join(DIR, p)));
+  ok(missingClips.length === 0,
+     'all ' + clipList.length + ' referenced Luna clips exist on disk' + (missingClips.length ? ' — MISSING: ' + missingClips.slice(0,6).join(', ') + (missingClips.length>6?' +' + (missingClips.length-6) + ' more':'') : ''));
+  // …and the dino art referenced by cards + worlds exists too.
+  const artList = [];
+  for (let i = 0; i < 10; i++) artList.push('art/dino-' + i + '.jpg', 'art/dino2-' + i + '.jpg');
+  for (const k of worlds) artList.push('art/az-world-' + k + '.jpg');
+  artList.push('art/az-hero.jpg');
+  const missingArt = artList.filter(p => !fs.existsSync(path.join(DIR, p)));
+  ok(missingArt.length === 0, 'all ' + artList.length + ' dino art files exist on disk' + (missingArt.length ? ' — MISSING: ' + missingArt.join(', ') : ''));
+
+  // Registered in the hub + precached for offline.
+  const hub = fs.readFileSync(path.join(DIR, 'index.html'), 'utf8');
+  ok(/Aziels-Dino-Quest\.html/.test(hub), "hub index.html links to Aziel's Dino Quest");
+  const sw = fs.readFileSync(path.join(DIR, 'sw.js'), 'utf8');
+  ok(/\.\/Aziels-Dino-Quest\.html/.test(sw), 'sw.js precaches Aziels-Dino-Quest.html');
+  ok(/art\/dino-9\.jpg/.test(sw) && /art\/az-world-name\.jpg/.test(sw) && /art\/audio\/az-dinomite\.m4a/.test(sw) && /art\/audio\/l-z\.m4a/.test(sw) && /art\/audio\/n-20\.m4a/.test(sw),
+     'sw.js precaches dino cards, world tiles and the full Aziel voice pack');
+} catch (e) { ok(false, 'Aziel Dino Quest threw: ' + e.message); }
 
 // ============================ summary ============================
 console.log('\n' + (FAILS === 0 ? 'ALL CHECKS PASSED ✅' : FAILS + ' CHECK(S) FAILED ❌'));

@@ -1,9 +1,22 @@
-# Adrian's Learning Games
+# Adrian & Aziel's Learning Games
 
-Two **single-file** browser games for an early reader/math learner (kindergarten → 1st grade):
+Three **single-file** browser games — two for an early reader/math learner (kindergarten → 1st grade)
+and one for his little brother (pre-K → kindergarten readiness):
 
 - `Adrians-Learning-Quest.html` — quiz-style trip through 9 "worlds" (numbers, phonics, **time** (analog clock), **money** (coins), calendar, shapes, colors, sight words, animals).
 - `Word-and-Math-Blaster.html` — three mini-games from a menu: **Word Builder Lab** (tap letters to spell), **Read It Yourself** (decodable sentences), **Math Blaster** (Asteroids-style shooter).
+- `Aziels-Dino-Quest.html` — dino-themed pre-K quest through 9 worlds (letter recognition upper+lower,
+  beginning sounds, counting 1-20, number recognition, shapes, colors, patterns, rhyming, spell-your-name).
+  **Audio-first**: every question auto-speaks via the Luna clip pack (letters `l-*.m4a`, numbers `n-*.m4a`,
+  colors/shapes/stems `az-*.m4a`, shared word clips `w-*.m4a`) with a big 🔊 repeat button; answers are
+  pictures/letters/numbers, 3 choices at easy levels, max 4. Progress lives under **azq-*** localStorage keys
+  (separate profile from Adrian's alg-/alq-), including its own kindergarten-readiness REPORT (`azq-report`,
+  9 domains, "Kindergarten Ready!" placements) and a gentle 🩺 Check-Up. The COLLECT prize system is a
+  20-card original dino TCG (2 series × 10, `art/dino-*.jpg`/`art/dino2-*.jpg`, rarity/HP/moves/holo,
+  booster every 8 stars, parametric `dinoSVG` fallback). Harness contract: `BANKS` (9 worlds), `cur`,
+  `startGame/startRound/nextQuestion`, generators `genLetters/genSounds/genCounting/genNumbers/genShapes/`
+  `genColors/genPatterns/genRhyme/genName` (each `{q,right,choices}`, answer buttons carry `data-val`
+  because answers can be images/SVG).
 
 Each game is one self-contained `.html` file — open it by double-clicking, no server or build step.
 
@@ -87,3 +100,15 @@ Public-Domain photos for concrete words and original SVGs for sun/star/rain. Att
 To re-source or add photos, re-run the staging scripts under the session scratchpad (`fetch.py` → view → `build_pics.py`).
 Both games rank TTS voices via `scoreVoice()` and expose a `#voicePick` `<select>` so you can swap off the
 robotic default; `getVoices()` is `[]` under the harness, so every voice path is guarded.
+
+## Voice clip protocol
+Every generated voice clip MUST pass machine verification before shipping: `verify-audio.py`
+(faster-whisper venv in the session scratchpad, or `pip install faster-whisper`) transcribes
+every art/audio/*.m4a and compares against **`voice_expect.json`** (committed in this repo:
+file → expected text, plus homophone aliases). A clip ships only when whisper hears exactly
+the intended words (or a listed alias). Silent, truncated, or misheard clips get regenerated —
+seed_audio varies per run, so retrying the same prompt usually fixes it. Hard-won tricks for
+stubborn sub-second clips: whisper base.en cannot reliably hear isolated single words/letters,
+so the shipped clip says the cue **twice** ("Bear, bear!", "M! M!") — expected text is the
+doubled form with the single form as an alias. Voice: Higgsfield seed_audio, Luna preset
+`375a3398-e3b4-4f91-845d-42181e352899`. Rate limit ≈3 generations per call burst.

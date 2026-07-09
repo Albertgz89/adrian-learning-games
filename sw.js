@@ -1,11 +1,12 @@
 // Service worker — makes the games installable and fully playable offline.
 // Bump CACHE_VERSION whenever any game file changes so iPads pick up updates.
-const CACHE_VERSION = 'adrian-games-v19';
+const CACHE_VERSION = 'adrian-games-v20';
 const ASSETS = [
   './',
   './index.html',
   './Adrians-Learning-Quest.html',
   './Word-and-Math-Blaster.html',
+  './Aziels-Dino-Quest.html',
   './manifest.webmanifest',
   './icon-192.png',
   './icon-512.png',
@@ -48,6 +49,35 @@ const ASSETS = [
   './art/card-golf-5.jpg','./art/card-golf-6.jpg','./art/card-golf-7.jpg','./art/card-golf-8.jpg','./art/card-golf-9.jpg',
   './art/card-space-0.jpg','./art/card-space-1.jpg','./art/card-space-2.jpg','./art/card-space-3.jpg','./art/card-space-4.jpg',
   './art/card-space-5.jpg','./art/card-space-6.jpg','./art/card-space-7.jpg','./art/card-space-8.jpg','./art/card-space-9.jpg',
+  // Aziel's Dino Quest — cards, world tiles, hero
+  './art/dino-0.jpg','./art/dino-1.jpg','./art/dino-2.jpg','./art/dino-3.jpg','./art/dino-4.jpg',
+  './art/dino-5.jpg','./art/dino-6.jpg','./art/dino-7.jpg','./art/dino-8.jpg','./art/dino-9.jpg',
+  './art/dino2-0.jpg','./art/dino2-1.jpg','./art/dino2-2.jpg','./art/dino2-3.jpg','./art/dino2-4.jpg',
+  './art/dino2-5.jpg','./art/dino2-6.jpg','./art/dino2-7.jpg','./art/dino2-8.jpg','./art/dino2-9.jpg',
+  './art/az-hero.jpg','./art/az-world-letters.jpg','./art/az-world-sounds.jpg','./art/az-world-counting.jpg',
+  './art/az-world-numbers.jpg','./art/az-world-shapes.jpg','./art/az-world-colors.jpg','./art/az-world-patterns.jpg',
+  './art/az-world-rhyme.jpg','./art/az-world-name.jpg',
+  // Aziel's Dino Quest — Luna voice pack (stems, cheers, colors, shapes, letters, numbers)
+  './art/audio/az-stem-findletter.m4a','./art/audio/az-stem-smallletter.m4a','./art/audio/az-stem-bigletter.m4a',
+  './art/audio/az-stem-findnumber.m4a','./art/audio/az-stem-starts.m4a','./art/audio/az-stem-rhyme.m4a',
+  './art/audio/az-q-count.m4a','./art/audio/az-q-next.m4a','./art/audio/az-q-name.m4a','./art/audio/az-q-missingname.m4a',
+  './art/audio/az-q-bigger.m4a','./art/audio/az-welcome.m4a','./art/audio/az-chooseworld.m4a','./art/audio/az-newcard.m4a',
+  './art/audio/az-dinomite.m4a','./art/audio/az-rawr.m4a','./art/audio/az-stomp.m4a','./art/audio/az-dinopower.m4a',
+  './art/audio/az-smartdino.m4a','./art/audio/az-mightyroar.m4a','./art/audio/az-greatjob.m4a','./art/audio/az-waytogo.m4a',
+  './art/audio/az-color-red.m4a','./art/audio/az-color-blue.m4a','./art/audio/az-color-yellow.m4a','./art/audio/az-color-green.m4a',
+  './art/audio/az-color-orange.m4a','./art/audio/az-color-purple.m4a','./art/audio/az-color-pink.m4a','./art/audio/az-color-brown.m4a',
+  './art/audio/az-color-black.m4a','./art/audio/az-color-white.m4a',
+  './art/audio/az-shape-circle.m4a','./art/audio/az-shape-square.m4a','./art/audio/az-shape-triangle.m4a','./art/audio/az-shape-star.m4a',
+  './art/audio/az-shape-heart.m4a','./art/audio/az-shape-rectangle.m4a','./art/audio/az-shape-oval.m4a','./art/audio/az-shape-diamond.m4a',
+  './art/audio/l-a.m4a','./art/audio/l-b.m4a','./art/audio/l-c.m4a','./art/audio/l-d.m4a','./art/audio/l-e.m4a','./art/audio/l-f.m4a',
+  './art/audio/l-g.m4a','./art/audio/l-h.m4a','./art/audio/l-i.m4a','./art/audio/l-j.m4a','./art/audio/l-k.m4a','./art/audio/l-l.m4a',
+  './art/audio/l-m.m4a','./art/audio/l-n.m4a','./art/audio/l-o.m4a','./art/audio/l-p.m4a','./art/audio/l-q.m4a','./art/audio/l-r.m4a',
+  './art/audio/l-s.m4a','./art/audio/l-t.m4a','./art/audio/l-u.m4a','./art/audio/l-v.m4a','./art/audio/l-w.m4a','./art/audio/l-x.m4a',
+  './art/audio/l-y.m4a','./art/audio/l-z.m4a',
+  './art/audio/n-1.m4a','./art/audio/n-2.m4a','./art/audio/n-3.m4a','./art/audio/n-4.m4a','./art/audio/n-5.m4a',
+  './art/audio/n-6.m4a','./art/audio/n-7.m4a','./art/audio/n-8.m4a','./art/audio/n-9.m4a','./art/audio/n-10.m4a',
+  './art/audio/n-11.m4a','./art/audio/n-12.m4a','./art/audio/n-13.m4a','./art/audio/n-14.m4a','./art/audio/n-15.m4a',
+  './art/audio/n-16.m4a','./art/audio/n-17.m4a','./art/audio/n-18.m4a','./art/audio/n-19.m4a','./art/audio/n-20.m4a',
   // word cards
   './art/word-ant.jpg','./art/word-apple.jpg','./art/word-ball.jpg','./art/word-banana.jpg','./art/word-bear.jpg','./art/word-bed.jpg',
   './art/word-bee.jpg','./art/word-bell.jpg','./art/word-bike.jpg','./art/word-bird.jpg','./art/word-boat.jpg','./art/word-bone.jpg',
