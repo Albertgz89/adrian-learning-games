@@ -94,6 +94,43 @@
   .stars{text-align:center;font-size:26px;letter-spacing:4px;min-height:1.2em}
   .tinybtn{background:none;border:none;font-family:inherit;color:var(--muted);font-weight:800;font-size:16px;cursor:pointer}
   canvas#fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:50}
+  /* Legacy Prep */
+  .seqbox{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+  .seqbox span{min-width:clamp(54px,14vw,78px);padding:10px 8px;border-radius:16px;background:#e0f3ff;
+    font-size:clamp(30px,8vw,46px);font-weight:800;text-align:center}
+  .seqbox span.q{background:#fff2cf;border:3px dashed var(--accent);color:var(--accent)}
+  .tenrows{display:flex;flex-direction:column;gap:4px;align-items:center}
+  .tenrow{font-size:clamp(22px,5.4vw,34px);letter-spacing:2px;white-space:nowrap}
+  .emo{font-size:clamp(64px,17vw,96px);line-height:1}
+  .bigLetter{font-size:clamp(90px,26vw,150px);font-weight:800;line-height:1;color:#1d7a8c}
+  #eggGrid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:8px}
+  .egg{border:none;cursor:pointer;font-family:inherit;font-weight:800;font-size:clamp(20px,5.4vw,30px);color:#5a4220;
+    background:radial-gradient(circle at 35% 30%,#fffdf3,#f3e2b5);border-radius:50% 50% 46% 46% / 60% 60% 40% 40%;
+    aspect-ratio:4/5;box-shadow:0 5px 0 #d8c08a;display:flex;align-items:center;justify-content:center;flex-direction:column}
+  .egg.hatched{background:radial-gradient(circle at 35% 30%,#e8fff1,#a8e6c2);box-shadow:0 5px 0 #6cc596;font-size:clamp(14px,3.6vw,20px)}
+  .egg.hatched b{font-size:clamp(22px,6vw,34px);line-height:1}
+  .egg.oops{animation:wig .35s}
+  @keyframes wig{25%{transform:rotate(-12deg)}75%{transform:rotate(12deg)}}
+  .flashCard{font-size:clamp(130px,40vw,220px);font-weight:800;text-align:center;line-height:1.1;color:#1f3d2b;
+    background:#fffdf3;border-radius:28px;margin:6px auto;max-width:360px;box-shadow:inset 0 0 0 4px #f3e2b5}
+  .flashBtns{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}
+  .flashTog{border:none;cursor:pointer;font-family:inherit;font-weight:800;font-size:18px;padding:16px 8px;border-radius:18px;
+    background:#eef2f0;color:#5f8a72;box-shadow:0 5px 0 #cfd8d3}
+  .flashTog.on{background:var(--good);color:#fff;box-shadow:0 5px 0 #0e9457}
+  #flashHint{display:block;margin:10px auto 0}
+  #flashPad,#progNums{display:grid;grid-template-columns:repeat(10,1fr);gap:6px}
+  #flashPad button{border:none;cursor:pointer;font-family:inherit;font-weight:800;font-size:clamp(14px,3.6vw,20px);
+    padding:10px 0;border-radius:12px;background:#e0f3ff;color:#1d7a8c}
+  #progLetters{display:grid;grid-template-columns:repeat(auto-fill,minmax(54px,1fr));gap:6px}
+  .pl{background:#f4f8f5;border-radius:12px;padding:6px 2px;text-align:center;font-weight:800;font-size:20px}
+  .pn{border-radius:10px;padding:8px 0;text-align:center;font-weight:800;font-size:16px}
+  .dot{display:inline-block;width:12px;height:12px;border-radius:50%;margin:0 2px;vertical-align:middle}
+  .dot.k,.pn.k{background:#16c172;color:#fff}
+  .dot.l,.pn.l{background:#ffcf3f}
+  .dot.n,.pn.n{background:#dde5e0}
+  #prepGrid{grid-template-columns:repeat(auto-fit,minmax(128px,1fr))}
+  .progH{margin:14px 0 6px;font-size:20px}
+  .progH small{font-weight:600;color:var(--muted);font-size:14px}
   #homeBtn{position:fixed;left:10px;top:10px;z-index:90;text-decoration:none;font-family:inherit;
     background:#fff;border-radius:999px;padding:8px 12px;font-weight:800;font-size:15px;color:#1f3d2b;
     box-shadow:0 6px 18px rgba(0,0,0,.3)}
@@ -122,7 +159,66 @@
       <h2 id="hello">Pick a dino world!</h2>
       <p class="sub">Every world is full of dino games. Earn stars to open card packs!</p>
       <div class="worlds" id="worldGrid"></div>
+      <button class="big" id="prepBtn">🎒 Legacy Ready: letters, sounds &amp; counting to 30</button>
       <button class="big" id="checkupBtn">🩺 Dino Check-Up — show what you know!</button>
+    </div>
+  </section>
+
+  <!-- Legacy Prep hub -->
+  <section id="prepScreen" class="screen">
+    <div class="card">
+      <div class="topbar"><button class="tinybtn" id="prepBack">⬅ Worlds</button><span class="pill score" id="prepStars">⭐</span></div>
+      <h2>🎒 Getting Ready for Legacy!</h2>
+      <p class="sub" id="prepSummary">Letters, letter sounds and counting to 30.</p>
+      <div class="worlds" id="prepGrid"></div>
+    </div>
+  </section>
+
+  <!-- Egg Hatch: tap the eggs 1 → 30 in order -->
+  <section id="eggScreen" class="screen">
+    <div class="card">
+      <div class="topbar"><button class="tinybtn" id="eggBack">⬅ Legacy</button><span class="pill lvl" id="eggLevel">Lvl 1</span><span class="pill" id="eggNext">Find 1</span></div>
+      <div class="qtext" id="eggText">Tap the eggs in order!</div>
+      <div id="eggGrid"></div>
+      <div class="feedback" id="eggDone"></div>
+      <button class="big" id="eggAgain" style="display:none">Hatch more eggs! 🥚</button>
+    </div>
+  </section>
+
+  <!-- Parent Flash Check: mirrors the oral assessment -->
+  <section id="flashScreen" class="screen">
+    <div class="card">
+      <div class="topbar"><button class="tinybtn" id="flashBack">⬅ Legacy</button><span class="pill" id="flashPos">1 of 26</span><button class="tinybtn" id="flashSkip">Done ➡</button></div>
+      <div id="flashLetters">
+        <p class="sub">Grown-up: point to the letter. Tap what Aziel said correctly, then Next.</p>
+        <div class="flashCard" id="flashCard">A</div>
+        <div class="flashBtns">
+          <button class="flashTog" id="flashName" type="button">✅ Said the NAME</button>
+          <button class="flashTog" id="flashSound" type="button">✅ Said the SOUND</button>
+        </div>
+        <button class="tinybtn" id="flashHint" type="button">🔊 Hear the answer</button>
+        <button class="big" id="flashNext">Next ➡</button>
+      </div>
+      <div id="flashCount" style="display:none">
+        <h2>Count out loud! 🦕</h2>
+        <p class="sub">Grown-up: have Aziel count as high as he can. Tap the last number he said correctly.</p>
+        <div id="flashPad"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Progress board -->
+  <section id="progScreen" class="screen">
+    <div class="card">
+      <div class="topbar"><button class="tinybtn" id="progBack">⬅ Legacy</button><span class="pill">📋 Progress</span></div>
+      <h2>Legacy Ready Board</h2>
+      <p class="sub" id="progSummary"></p>
+      <h3 class="progH">Letters <small>(name dot · sound dot)</small></h3>
+      <div id="progLetters"></div>
+      <h3 class="progH">Numbers 1 – 30 <small>(green = reads it · yellow = counts to it out loud)</small></h3>
+      <div id="progNums"></div>
+      <p class="sub" id="progNext"></p>
+      <p class="sub"><span class="dot k"></span> knows it &nbsp; <span class="dot l"></span> practicing &nbsp; <span class="dot n"></span> not yet</p>
     </div>
   </section>
 
@@ -1100,7 +1196,342 @@ var BANKS = {
   rhyme:    { title:'Rhyme River',     emoji:'🎵', color:'#25b3e0', gen:genRhyme,    dom:'RHY' },
   name:     { title:'Name Rock',       emoji:'✍️', color:'#c9821a', gen:genName,     dom:'WRT' },
 };
-function domFor(world,q){ return (q&&q.dom) || BANKS[world].dom; }
+function domFor(world,q){ return (q&&q.dom) || bankOf(world).dom; }
+
+/* ================= LEGACY READY (kindergarten-entry prep) =================
+   Focused practice on what the entry assessment checks: letter names (big +
+   small), letter sounds, and counting / number recognition to 30. LEG keeps
+   per-item mastery in azq-legacy (last 5 tries per letter/number as a 1/0
+   string) so practice leans on the items Aziel doesn't know yet. A parent-led
+   Flash Check mirrors the oral test: Aziel says the name and sound out loud. */
+var LEG = {
+  KEY:'azq-legacy',
+  data(){ try{ return JSON.parse(localStorage.getItem(this.KEY)||'{}')||{}; }catch(e){ return {}; } },
+  save(d){ try{ localStorage.setItem(this.KEY, JSON.stringify(d)); }catch(e){} },
+  // kind: L = letter name, S = letter sound, N = number. A parent-verified
+  // "yes" from the Flash Check counts double.
+  mark(kind,item,ok,weight){
+    const d=this.data(); d[kind]=d[kind]||{};
+    const add=(ok?'1':'0').repeat(weight||1);
+    d[kind][item]=((d[kind][item]||'')+add).slice(-5);
+    this.save(d);
+  },
+  status(kind,item){
+    const s=((this.data()[kind]||{})[item])||'';
+    if(/11$/.test(s)) return 'k';
+    return s ? 'l' : 'n';
+  },
+  known(kind,item){ return this.status(kind,item)==='k'; },
+  // 75% of the time drill something not yet known
+  pickItem(kind,all){
+    const weak=all.filter(x=>!this.known(kind,x));
+    return (weak.length && Math.random()<0.75) ? pick(weak) : pick(all);
+  },
+  setCount(n){ const d=this.data(); d.count=n; d.countBest=Math.max(d.countBest||0,n); this.save(d); },
+  summary(){
+    const L=LETTERS.split('');
+    const nums=[]; for(let n=1;n<=30;n++) nums.push(n);
+    const d=this.data();
+    return { names:L.filter(c=>this.known('L',c)).length, sounds:L.filter(c=>this.known('S',c)).length,
+             nums:nums.filter(n=>this.known('N',n)).length, count:d.count||0, countBest:d.countBest||0 };
+  },
+};
+
+// Keyword picture per letter (photo when we have art/word-*.jpg, else emoji).
+// tts = a stretchable sound for consonants; vowels are taught by keyword only
+// because speech engines read "a"/"e" as letter names.
+var LSOUND={ a:[null,'apple'], b:['buh','bear'], c:['kuh','cat'], d:['duh','dog'], e:[null,'egg'], f:['fff','fish'],
+  g:['guh','goat'], h:['hhh','hat'], i:[null,'iguana'], j:['juh','juice'], k:['kuh','kite'], l:['lll','lion'],
+  m:['mmm','moon'], n:['nnn','nose'], o:[null,'octopus'], p:['puh','pig'], q:['kwuh','queen'], r:['rrr','rain'],
+  s:['sss','sun'], t:['tuh','tiger'], u:[null,'umbrella'], v:['vvv','volcano'], w:['wuh','whale'], x:['ks','box'],
+  y:['yuh','yo-yo'], z:['zzz','zebra'] };
+var KEY_EMOJI={iguana:'🦎',juice:'🧃',octopus:'🐙',queen:'👸',umbrella:'☂️',volcano:'🌋','yo-yo':'🪀'};
+// letters that share a first sound can't be told apart by ear (cat/kite/queen)
+function soundGroup(ch){ return 'ckq'.indexOf(ch)>=0 ? 'k' : ch; }
+function keyPic(word){
+  if(KEY_EMOJI[word]) return '<span class="emo" aria-label="'+word+'">'+KEY_EMOJI[word]+'</span>';
+  return '<img alt="'+word+'" src="art/word-'+word+'.jpg" onerror="this.replaceWith(this.alt)">';
+}
+function soundSay(ch){
+  const s=LSOUND[ch];
+  return s[0] ? s[0]+', '+s[0]+', like '+s[1] : 'the first sound in '+s[1];
+}
+
+// Letter Hunt — find big letters, then small ones, then tricky lookalikes.
+function genPrepLetters(level){
+  level = level || rng(1,9);
+  const ch=LEG.pickItem('L', LETTERS.split(''));
+  const nCh = level<=2 ? 3 : 4;
+  const lower = level>=5 && (level>=7 || rint(2));
+  const right = lower ? ch : ch.toUpperCase();
+  let pool = LETTERS.split('');
+  if(level>=7){ const g=confusablesOf(ch); if(g) pool=g.concat(pool); }
+  pool = pool.map(c=>lower?c:c.toUpperCase());
+  const choices=pickChoices(right,[...new Set(pool)],nCh);
+  return { q:'Find the '+(lower?'little':'big')+' letter '+right+'!', right, choices,
+           say:'find the '+(lower?'small':'big')+' letter '+ch, render:l=>l,
+           item:{kind:'L',id:ch}, hint:lower?'Little letters are the small ones!':'Tap the letter you hear!' };
+}
+
+// Sound Safari — letter ↔ sound. Easy: hear the sound (with its keyword
+// picture) and tap the letter. Middle: see a letter, pick the picture that
+// starts with its sound. Hard: sound only, small letters, 4 choices.
+function genPrepSounds(level){
+  level = level || rng(1,9);
+  const all=LETTERS.split('');
+  const nCh = level<=2 ? 3 : 4;
+  let mode = level<=3 ? 'hear' : level<=6 ? (rint(2)?'hear':'pic') : (rint(3)?'ear':'pic');
+  let ch=LEG.pickItem('S', all);
+  if(mode==='pic' && ch==='x') ch=pick(all.filter(c=>c!=='x')); // box ENDS with x
+  const kw=LSOUND[ch][1];
+  if(mode==='pic'){
+    const pool=all.filter(c=>c!=='x' && soundGroup(c)!==soundGroup(ch)).map(c=>LSOUND[c][1]);
+    const choices=pickChoices(kw, pool, nCh);
+    const L=ch.toUpperCase();
+    return { q:'Which picture starts with the '+L+' sound?', right:kw, choices,
+             say:L+' says '+soundSay(ch)+'. Which picture starts with '+L+'?',
+             picHTML:'<div class="bigLetter">'+L+ch+'</div>', render:keyPic,
+             item:{kind:'S',id:ch}, letter:ch, hint:'Say each picture. Listen for the first sound!' };
+  }
+  const lower = mode==='ear' && level>=8;
+  const conf=confusablesOf(ch)||[];
+  const pool=all.filter(c=>soundGroup(c)!==soundGroup(ch) && (level>=5 || conf.indexOf(c)<0))
+                .map(c=>lower?c:c.toUpperCase());
+  const right=lower?ch:ch.toUpperCase();
+  const choices=pickChoices(right, pool, nCh);
+  return { q:'Which letter makes this sound?', right, choices,
+           say:'Which letter says '+soundSay(ch)+'?',
+           picHTML: mode==='hear' ? keyPic(kw) : '<div class="emo">👂</div>', render:l=>l,
+           item:{kind:'S',id:ch}, letter:ch, hint: mode==='hear' ? 'Say the picture slowly: '+kw+'!' : 'Tap 🔊 to hear it again.' };
+}
+
+// Count to 30 — what comes next, missing number, what comes after, and
+// counting dinosaurs in rows of ten. The range grows 10 → 20 → 30.
+function genCount30(level){
+  level = level || rng(1,9);
+  const nCh = level<=2 ? 3 : 4;
+  const hi = level<=1 ? 10 : level<=2 ? 20 : 30;
+  const lo = level<=3 ? 1 : level<=6 ? 8 : 15;
+  const kind = level<=3 ? 'next' : level<=6 ? pick(['next','missing','after']) : pick(['next','missing','after','count']);
+  const range=(a,b)=>{ const r=[]; for(let n=a;n<=b;n++) r.push(n); return r; };
+  let n, seq, q, say, picHTML;
+  if(kind==='count'){
+    n=LEG.pickItem('N', range(11,30));
+    const icon=pick(['🦕','🦖']);
+    let rows=''; for(let left=n; left>0; left-=10) rows+='<div class="tenrow">'+new Array(Math.min(10,left)).fill(icon).join('')+'</div>';
+    q='How many dinosaurs?'; say='Count the dinosaurs! How many do you see?';
+    picHTML='<div class="tenrows countbox" data-count="'+n+'">'+rows+'</div>';
+    return { q, right:String(n), choices:numChoices(n,nCh,32), say, picHTML, render:l=>l, kind, count:n,
+             item:{kind:'N',id:n}, hint:'Each row has 10. Count 10, 20, then keep going!' };
+  }
+  if(kind==='after'){
+    n=LEG.pickItem('N', range(Math.max(2,lo),hi));
+    return { q:'What comes after '+(n-1)+'?', right:String(n), choices:numChoices(n,nCh,hi+2),
+             say:'What number comes after '+(n-1)+'?', render:l=>l, kind, seq:[n-1],
+             picHTML:'<div class="seqbox"><span>'+(n-1)+'</span><span class="q">?</span></div>',
+             item:{kind:'N',id:n}, hint:'Count up one more!' };
+  }
+  if(kind==='missing'){
+    n=LEG.pickItem('N', range(Math.max(3,lo),hi-1));
+    seq=[n-2,n-1,'?',n+1];
+    say=(n-2)+', '+(n-1)+', something, '+(n+1)+'. Which number is missing?';
+    q='Which number is missing?';
+  } else {
+    n=LEG.pickItem('N', range(Math.max(4,lo),hi));
+    seq=[n-3,n-2,n-1,'?'];
+    say=(n-3)+', '+(n-2)+', '+(n-1)+'. What comes next?';
+    q='What comes next?';
+  }
+  picHTML='<div class="seqbox" data-seq="'+seq.join(',')+'">'+seq.map(x=>x==='?'?'<span class="q">?</span>':'<span>'+x+'</span>').join('')+'</div>';
+  return { q, right:String(n), choices:numChoices(n,nCh,hi+2), say, picHTML, render:l=>l, kind, seq,
+           item:{kind:'N',id:n}, hint:'Count it out loud!' };
+}
+
+// Legacy Mix — a little of everything, each skill at its own level.
+function genPrepMix(){
+  const key=pick(['pletters','psounds','p30']);
+  const q=PREP[key].gen(getLevel(key));
+  q.sub=key; q.dom=PREP[key].dom;
+  return q;
+}
+
+var PREP = {
+  pletters: { title:'Letter Hunt',  emoji:'🔤', color:'#38a169', gen:genPrepLetters, dom:'LET' },
+  psounds:  { title:'Sound Safari', emoji:'👂', color:'#2e9e96', gen:genPrepSounds,  dom:'SND' },
+  p30:      { title:'Count to 30',  emoji:'🔢', color:'#3a67d6', gen:genCount30,     dom:'CNT' },
+  pmix:     { title:'Legacy Mix',   emoji:'🎒', color:'#c9821a', gen:genPrepMix,     dom:'LET' },
+};
+function bankOf(world){ return BANKS[world] || PREP[world]; }
+
+function showPrep(){
+  const grid=$('prepGrid');
+  if(grid){
+    grid.innerHTML='';
+    const tiles=Object.keys(PREP).map(k=>[k,PREP[k].emoji,PREP[k].title,PREP[k].color,()=>startRound(k)])
+      .concat([['eggs','🥚','Egg Hatch 1-30','#d97f1f',()=>startEggs()],
+               ['flash','🃏','Grown-up Flash Check','#805ad5',startFlash],
+               ['prog','📋','Progress Board','#e06a8b',showProgress]]);
+    for(const [k,em,title,color,fn] of tiles){
+      const b=document.createElement('button');
+      b.className='world noimg'; b.style.background=color; b.dataset.key=k;
+      b.innerHTML='<span class="we">'+em+'</span><span class="wlabel">'+title+'</span>';
+      b.addEventListener('click',fn);
+      grid.appendChild(b);
+    }
+  }
+  const s=LEG.summary();
+  const ps=$('prepSummary');
+  if(ps) ps.textContent='Knows '+s.names+'/26 letter names · '+s.sounds+'/26 sounds · counts to '+s.countBest+(s.countBest>=30?' 🎉':'');
+  const st=$('prepStars'); if(st) st.textContent='⭐ '+totalScore;
+  show('prepScreen');
+}
+
+/* ---------- Egg Hatch: tap numbered eggs in counting order ----------
+   Lvl 1: 1-10, Lvl 2: 1-20, Lvl 3: 1-30 in order; Lvl 4+: 1-30 scrambled,
+   so Aziel must recognize each next number. Few misses → level up. */
+var eggs=null;
+function startEggs(level){
+  level = level || getLevel('eggs');
+  const max = level<=1 ? 10 : level<=2 ? 20 : 30;
+  const scrambled = level>=4;
+  const order=[]; for(let n=1;n<=max;n++) order.push(n);
+  if(scrambled) shuffle(order);
+  eggs={ level, max, next:1, scrambled, miss:0 };
+  const grid=$('eggGrid');
+  if(grid){
+    grid.innerHTML='';
+    for(const n of order){
+      const b=document.createElement('button');
+      b.className='egg'; b.dataset.n=n; b.textContent=n;
+      b.addEventListener('click',()=>tapEgg(n));
+      grid.appendChild(b);
+    }
+  }
+  const dn=$('eggDone'); if(dn) dn.textContent='';
+  const ag=$('eggAgain'); if(ag) ag.style.display='none';
+  const lv=$('eggLevel'); if(lv) lv.textContent='Lvl '+level;
+  const tx=$('eggText'); if(tx) tx.textContent= scrambled ? 'Find the eggs 1 to '+max+'!' : 'Count and tap: 1 to '+max+'!';
+  updateEggNext();
+  show('eggScreen');
+  say(scrambled ? 'find the number 1' : 'Count the eggs! Tap 1 first.');
+}
+function updateEggNext(){ const p=$('eggNext'); if(p&&eggs) p.textContent= eggs.next<=eggs.max ? 'Find '+eggs.next : '🎉'; }
+function tapEgg(n){
+  if(!eggs || eggs.next>eggs.max) return false;
+  const b=document.querySelector('#eggGrid .egg[data-n="'+n+'"]');
+  if(n!==eggs.next){
+    eggs.miss++;
+    SFX.play('wrong');
+    if(b){ b.classList.remove('oops'); void b.offsetWidth; b.classList.add('oops'); }
+    if(eggs.scrambled) LEG.mark('N',eggs.next,false);
+    say('find the number '+eggs.next);
+    return false;
+  }
+  if(b){ b.classList.add('hatched'); b.disabled=true; b.innerHTML='<b>'+(n%2?'🦕':'🦖')+'</b>'+n; }
+  if(eggs.scrambled) LEG.mark('N',n,true);
+  SFX.play('stomp');
+  say(String(n));
+  eggs.next++;
+  updateEggNext();
+  if(eggs.next>eggs.max){
+    const lvl=eggs.level;
+    if(eggs.miss<=2) setLevel('eggs',lvl+1);
+    const d=LEG.data(); d.eggBest=Math.max(d.eggBest||0,eggs.max); LEG.save(d);
+    totalScore++; updateScore(); COLLECT.addStar();
+    SFX.play('fanfare'); burst();
+    const dn=$('eggDone'); if(dn) dn.textContent='🎉 All '+eggs.max+' dinos hatched!'+(eggs.miss<=2&&lvl<9?' Level up!':'');
+    const ag=$('eggAgain'); if(ag) ag.style.display='block';
+    say(eggs.miss<=2 ? 'Level up!' : 'Dino-mite!');
+  }
+  return true;
+}
+
+/* ---------- Grown-up Flash Check (oral, like the real assessment) ---------- */
+var flash=null;
+function startFlash(){
+  flash={ list:shuffle(LETTERS.split('')), i:0, name:false, sound:false, res:{} };
+  const fl=$('flashLetters'), fc=$('flashCount');
+  if(fl) fl.style.display='block'; if(fc) fc.style.display='none';
+  show('flashScreen');
+  renderFlash();
+}
+function renderFlash(){
+  if(!flash) return;
+  const ch=flash.list[flash.i];
+  flash.upper=rint(2)===0;  // mixed case, like the real test
+  const c=$('flashCard'); if(c) c.textContent=flash.upper?ch.toUpperCase():ch;
+  const p=$('flashPos'); if(p) p.textContent=(flash.i+1)+' of '+flash.list.length;
+  flash.name=false; flash.sound=false; paintFlash();
+}
+function paintFlash(){
+  const n=$('flashName'), s=$('flashSound');
+  if(n) n.classList.toggle('on',!!flash.name);
+  if(s) s.classList.toggle('on',!!flash.sound);
+}
+function flashToggle(which){ if(!flash) return; flash[which]=!flash[which]; paintFlash(); }
+function flashNext(){
+  if(!flash || flash.i>=flash.list.length) return;
+  const ch=flash.list[flash.i];
+  flash.res[ch]={ name:flash.name, sound:flash.sound };
+  LEG.mark('L',ch,flash.name,flash.name?2:1);
+  LEG.mark('S',ch,flash.sound,flash.sound?2:1);
+  flash.i++;
+  if(flash.i>=flash.list.length) flashToCount(); else renderFlash();
+}
+function flashToCount(){
+  const fl=$('flashLetters'), fc=$('flashCount');
+  if(fl) fl.style.display='none'; if(fc) fc.style.display='block';
+  const pad=$('flashPad');
+  if(pad && !pad.children.length){
+    for(let n=1;n<=30;n++){
+      const b=document.createElement('button'); b.textContent=n; b.dataset.n=n;
+      b.addEventListener('click',()=>flashCount(n));
+      pad.appendChild(b);
+    }
+  }
+}
+function flashCount(n){
+  LEG.setCount(n);
+  flash=null;
+  SFX.play('fanfare');
+  showProgress();
+}
+
+/* ---------- Progress board ---------- */
+function showProgress(){
+  const s=LEG.summary();
+  const L=$('progLetters');
+  if(L){
+    L.innerHTML='';
+    for(const ch of LETTERS){
+      const d=document.createElement('div'); d.className='pl'; d.dataset.ch=ch;
+      d.innerHTML=ch.toUpperCase()+ch+'<br><span class="dot '+LEG.status('L',ch)+'" title="name"></span><span class="dot '+LEG.status('S',ch)+'" title="sound"></span>';
+      L.appendChild(d);
+    }
+  }
+  const N=$('progNums');
+  if(N){
+    N.innerHTML='';
+    for(let n=1;n<=30;n++){
+      const d=document.createElement('div');
+      const st=LEG.status('N',n);
+      d.className='pn '+(st==='n' && n<=s.countBest ? 'l' : st); d.textContent=n;
+      N.appendChild(d);
+    }
+  }
+  const sm=$('progSummary');
+  if(sm) sm.textContent='Letter names '+s.names+'/26 · Letter sounds '+s.sounds+'/26 · Counts out loud to '+(s.count||'?')+(s.countBest>s.count?' (best '+s.countBest+')':'');
+  const nx=$('progNext');
+  if(nx){
+    const needN=LETTERS.split('').filter(c=>!LEG.known('L',c)).map(c=>c.toUpperCase());
+    const needS=LETTERS.split('').filter(c=>!LEG.known('S',c)).map(c=>c.toUpperCase());
+    nx.textContent = (needN.length||needS.length||s.countBest<30)
+      ? 'Practice next: '+[needN.length?'names '+needN.slice(0,8).join(' '):'', needS.length?'sounds '+needS.slice(0,8).join(' '):'',
+          s.countBest<30?'counting past '+s.countBest:''].filter(Boolean).join(' · ')
+      : '🎉 Legacy ready: every letter name, every sound, and counting to 30!';
+  }
+  show('progScreen');
+}
 
 /* ---------- flow ---------- */
 var player='Aziel', totalScore=0;
@@ -1141,10 +1572,10 @@ function buildWorldGrid(){
   }
 }
 function startRound(world){
-  if(!BANKS[world]) world='letters';
+  if(!bankOf(world)) world='letters';
   cur = { world, i:0, correct:0, q:null };
   const nm=$('worldName');
-  if(nm) nm.textContent = checkup ? ('🩺 '+(checkup.i+1)+' of '+checkup.total) : BANKS[world].title;
+  if(nm) nm.textContent = checkup ? ('🩺 '+(checkup.i+1)+' of '+checkup.total) : bankOf(world).title;
   const rs=$('roundStars'); if(rs) rs.textContent='';
   const fb=$('feedback'); if(fb) fb.textContent='';
   updateLevelPill();
@@ -1184,9 +1615,9 @@ function finishCheckup(){
 }
 
 function renderQuestion(){
-  const world = BANKS[cur.world] ? cur.world : 'letters';
+  const world = bankOf(cur.world) ? cur.world : 'letters';
   const lvl = checkup ? checkup.lvls[BANKS[world].dom] : getLevel(world);
-  cur.q = BANKS[world].gen(lvl);
+  cur.q = bankOf(world).gen(lvl);
   const q=cur.q;
   const qt=$('qtext'); if(qt) qt.textContent=q.q;
   const pic=$('qpic');
@@ -1236,12 +1667,14 @@ function chooseAnswer(btn, label){
   }
   if(box) [...box.querySelectorAll('.ans')].forEach(b=>{ b.disabled=true; if(b.dataset.val===cur.q.right) b.classList.add('right'); });
   REPORT.log(dom, correct);
+  if(cur.q.item) LEG.mark(cur.q.item.kind, cur.q.item.id, correct);
+  const adaptKey = cur.q.sub || cur.world;
   const fb=$('feedback');
   if(correct){
     btn.classList.add('right');
     cur.correct++; totalScore++;
     updateScore();
-    const up=onCorrectAdapt(cur.world);
+    const up=onCorrectAdapt(adaptKey);
     const cheer=praise();
     if(fb){ fb.textContent=(up?'⬆️ Level up! ':'🎉 ')+cheer; fb.style.color='var(--good)'; }
     burst();
@@ -1250,13 +1683,14 @@ function chooseAnswer(btn, label){
     COLLECT.addStar();
   }else{
     btn.classList.add('wrong');
-    onWrongAdapt(cur.world);
+    onWrongAdapt(adaptKey);
     SFX.play('wrong');
     if(fb){ fb.textContent='Try the green one! 💚'; fb.style.color='var(--bad)'; }
     const r=String(cur.q.right).toLowerCase();
     // speak the right answer with a clip chain when we have one;
     // emoji/shape answers the pack can't say get the generic nudge clip
     if(/^[a-z0-9]+$/.test(r) && restClip(r)) say('Good try. The answer is '+r);
+    else if(/^\d+$/.test(r)) say('Good try. The answer is '+r);
     else say('Try the right answer');
   }
   updateLevelPill();
@@ -1275,7 +1709,7 @@ function praise(){
 }
 praise();
 function updateScore(){ const s=$('scorePill'); if(s) s.textContent='⭐ '+totalScore; }
-function updateLevelPill(){ const p=$('levelPill'); if(p) p.textContent='Lvl '+getLevel(cur.world); }
+function updateLevelPill(){ const p=$('levelPill'); if(p) p.textContent='Lvl '+getLevel((cur.q&&cur.q.sub)||cur.world); }
 
 var advanceTimer = null;
 function scheduleAdvance(ms){ if(advanceTimer) clearTimeout(advanceTimer); advanceTimer=setTimeout(nextQuestion, ms); }
@@ -1316,7 +1750,18 @@ function burst(){
 /* ---------- wire up controls (synchronous; elements already parsed above) ---------- */
 (function init(){
   const go=$('goBtn'); if(go) go.addEventListener('click',startGame);
-  const back=$('backBtn'); if(back) back.addEventListener('click',()=>{ if(advanceTimer) clearTimeout(advanceTimer); checkup=null; buildWorldGrid(); show('mapScreen'); });
+  const back=$('backBtn'); if(back) back.addEventListener('click',()=>{ if(advanceTimer) clearTimeout(advanceTimer); checkup=null;
+    if(PREP[cur.world]){ showPrep(); return; } buildWorldGrid(); show('mapScreen'); });
+  const pb=$('prepBtn'); if(pb) pb.addEventListener('click',showPrep);
+  const toMap=()=>{ eggs=null; flash=null; buildWorldGrid(); show('mapScreen'); };
+  const pbk=$('prepBack'); if(pbk) pbk.addEventListener('click',toMap);
+  for(const id of ['eggBack','flashBack','progBack']){ const e=$(id); if(e) e.addEventListener('click',()=>{ eggs=null; flash=null; showPrep(); }); }
+  const ea=$('eggAgain'); if(ea) ea.addEventListener('click',()=>startEggs());
+  const fn=$('flashName'); if(fn) fn.addEventListener('click',()=>flashToggle('name'));
+  const fs=$('flashSound'); if(fs) fs.addEventListener('click',()=>flashToggle('sound'));
+  const fx=$('flashNext'); if(fx) fx.addEventListener('click',flashNext);
+  const fk=$('flashSkip'); if(fk) fk.addEventListener('click',flashToCount);
+  const fh=$('flashHint'); if(fh) fh.addEventListener('click',()=>{ if(flash){ const ch=flash.list[flash.i]; if(ch) say(ch.toUpperCase()+' says '+soundSay(ch)); } });
   const nb=$('nextBtn'); if(nb) nb.addEventListener('click',nextQuestion);
   const cu=$('checkupBtn'); if(cu) cu.addEventListener('click',startCheckup);
   const sb=$('sayBtn'); if(sb) sb.addEventListener('click',()=>{ if(cur.q) say(cur.q.say||cur.q.q,{rate:0.85}); });
@@ -1334,6 +1779,7 @@ function burst(){
   try{
     const wp=new URLSearchParams(location.search).get('world');
     if(wp) openWorldDeepLink(wp);
+    if(new URLSearchParams(location.search).get('prep')){ startGame(); showPrep(); }
   }catch(e){}
   // offline/app support (no-op under the harness and on file://)
   try{ if('serviceWorker' in navigator && /^https?:/.test(location.protocol)) navigator.serviceWorker.register('sw.js'); }catch(e){}

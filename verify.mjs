@@ -814,6 +814,143 @@ try {
   const missingArt = artList.filter(p => !fs.existsSync(path.join(DIR, p)));
   ok(missingArt.length === 0, 'all ' + artList.length + ' dino art files exist on disk' + (missingArt.length ? ' — MISSING: ' + missingArt.join(', ') : ''));
 
+  // ---- LEGACY READY: letters, letter sounds, counting to 30 ----
+  w.eval('window.__P = { get PREP(){return PREP}, get LEG(){return LEG}, get eggs(){return eggs}, get flash(){return flash} };'
+       + 'window.__gPL=genPrepLetters; window.__gPS=genPrepSounds; window.__g30=genCount30;');
+  const P = w.__P;
+  w.localStorage.removeItem('azq-legacy');
+  w.document.getElementById('prepBtn').click();
+  ok(w.document.getElementById('prepScreen').classList.contains('on'), 'Legacy Ready button opens the prep hub');
+  const tiles = [...w.document.querySelectorAll('#prepGrid .world')].map(b => b.dataset.key);
+  ok(['pletters','psounds','p30','pmix','eggs','flash','prog'].every(k => tiles.includes(k)),
+     'prep hub offers Letter Hunt, Sound Safari, Count to 30, Mix, Egg Hatch, Flash Check, Progress: ' + tiles.join(','));
+  ok(Object.keys(A.BANKS).length === 9, 'prep activities do not change the 9 Dino worlds');
+
+  // Play every prep activity through the real quiz UI.
+  let pBroken = 0, pAnswered = 0;
+  for (const k of ['pletters','psounds','p30','pmix']) {
+    for (let lvl = 1; lvl <= 9; lvl++) {
+      w.localStorage.setItem('azq-lvl-' + k, String(lvl));
+      for (const sub of ['pletters','psounds','p30']) w.localStorage.setItem('azq-lvl-' + sub, String(lvl));
+      w.startRound(k);
+      for (let i = 0; i < 6; i++) {
+        const q = A.cur.q;
+        const vals = [...w.document.querySelectorAll('#answers .ans')].map(b => b.dataset.val);
+        if (new Set(vals).size !== vals.length || vals.length < 3 || vals.length > 4 || !(q.say || q.q)) pBroken++;
+        const rb = [...w.document.querySelectorAll('#answers .ans')].find(b => b.dataset.val === q.right);
+        if (!rb) pBroken++; else { (i % 3 === 2 ? [...w.document.querySelectorAll('#answers .ans')].find(b => b !== rb) : rb).click(); pAnswered++; }
+        w.nextQuestion();
+      }
+    }
+  }
+  ok(pBroken === 0, 'all prep activities answerable: right answer present, 3-4 unique choices, every question spoken (' + pAnswered + ' answers)');
+  ok(w.eval('cur.world') === 'pmix' && /Legacy/.test(w.document.getElementById('worldName').textContent), 'prep rounds show their own title');
+  w.document.getElementById('backBtn').click();
+  ok(w.document.getElementById('prepScreen').classList.contains('on'), 'back from a prep round returns to the prep hub');
+  const legData = JSON.parse(w.localStorage.getItem('azq-legacy') || '{}');
+  ok(legData.L && legData.S && legData.N, 'answers record per-item mastery under azq-legacy (letters, sounds, numbers)');
+
+  // FACT AUDIT letters: displayed case matches, right is the target letter.
+  let plOk = true;
+  for (let lvl = 1; lvl <= 9; lvl++) for (let i = 0; i < 150; i++) {
+    const q = w.__gPL(lvl);
+    const id = q.item.id;
+    if (q.right.toLowerCase() !== id || (lvl <= 4 && q.right !== id.toUpperCase())) plOk = false;
+    if (q.choices.some(c => (c === c.toUpperCase()) !== (q.right === q.right.toUpperCase()))) plOk = false;
+    if (q.choices.indexOf(q.right) < 0 || new Set(q.choices).size !== q.choices.length) plOk = false;
+    if (lvl <= 2 && q.choices.length !== 3) plOk = false;
+  }
+  ok(plOk, 'FACT AUDIT letter hunt: right letter is the target, all choices share its case, levels 1-4 are big letters (1350 questions)');
+
+  // FACT AUDIT sounds: independent first-sound table. Keyword must start with
+  // the letter's sound; no distractor may share that first sound (c/k/q are /k/).
+  const FIRST = { apple:'a',bear:'b',cat:'k',dog:'d',egg:'e',fish:'f',goat:'g',hat:'h',iguana:'i',juice:'j',kite:'k',lion:'l',
+    moon:'m',nose:'n',octopus:'o',pig:'p',queen:'k',rain:'r',sun:'s',tiger:'t',umbrella:'u',volcano:'v',whale:'w',box:'b',
+    'yo-yo':'y',zebra:'z' };
+  const SND = c => 'ckq'.includes(c) ? 'k' : c;
+  let psOk = true, psModes = new Set();
+  for (let lvl = 1; lvl <= 9; lvl++) for (let i = 0; i < 150; i++) {
+    const q = w.__gPS(lvl);
+    const ch = q.letter;
+    if (q.choices.indexOf(q.right) < 0 || new Set(q.choices).size !== q.choices.length) psOk = false;
+    if (FIRST[q.right] !== undefined) { // picture answer
+      psModes.add('pic');
+      if (ch === 'x' || FIRST[q.right] !== SND(ch)) psOk = false;
+      for (const c of q.choices) if (c !== q.right && FIRST[c] === SND(ch)) psOk = false;
+    } else {
+      psModes.add('letter');
+      if (q.right.toLowerCase() !== ch) psOk = false;
+      for (const c of q.choices) if (c !== q.right && SND(c.toLowerCase()) === SND(ch)) psOk = false;
+    }
+    if (!/says|sound/.test(q.say)) psOk = false;
+  }
+  ok(psOk && psModes.size === 2, 'FACT AUDIT letter sounds: answer starts with the letter\'s sound, no distractor shares it, both sound→letter and letter→picture modes (1350 questions)');
+
+  // FACT AUDIT counting to 30: recompute next/missing/after/count independently.
+  let c30 = true, maxSeen = 0, kinds = new Set();
+  for (let lvl = 1; lvl <= 9; lvl++) for (let i = 0; i < 200; i++) {
+    const q = w.__g30(lvl);
+    const n = parseInt(q.right, 10);
+    kinds.add(q.kind); maxSeen = Math.max(maxSeen, n);
+    if (n < 1 || n > 30) c30 = false;
+    if (lvl === 1 && n > 10) c30 = false;
+    if (q.kind === 'count') {
+      const m = (q.picHTML || '').match(/data-count="(\d+)"/);
+      const shown = [...(q.picHTML || '').replace(/<[^>]*>/g, '')].filter(c => c === '🦕' || c === '🦖').length;
+      if (!m || m[1] !== q.right || shown !== n) c30 = false;
+    } else {
+      const s = q.seq, qi = s.indexOf('?');
+      if (q.kind === 'after' && s[0] + 1 !== n) c30 = false;
+      if (q.kind !== 'after') {
+        for (let j = 0; j < s.length; j++) if (j !== qi && s[j] !== n - (qi - j)) c30 = false;
+      }
+    }
+    if (q.choices.indexOf(q.right) < 0 || new Set(q.choices).size !== q.choices.length || q.choices.some(c => +c < 1)) c30 = false;
+  }
+  ok(c30, 'FACT AUDIT count to 30: next/missing/after/count answers are exactly right (1800 questions)');
+  ok(maxSeen === 30 && ['next','missing','after','count'].every(k => kinds.has(k)), 'count to 30 reaches 30 and uses all four question kinds');
+
+  // Mastery: weak items get drilled; two right in a row = known.
+  w.localStorage.removeItem('azq-legacy');
+  w.eval('LEG.mark("L","m",true); LEG.mark("L","m",true); LEG.mark("L","b",false);');
+  ok(P.LEG.known('L','m') && !P.LEG.known('L','b') && P.LEG.status('L','b') === 'l' && P.LEG.status('L','q') === 'n',
+     'mastery: two right in a row = known, a miss = practicing, untried = not yet');
+  w.eval('for (const c of LETTERS) if (c !== "q") { LEG.mark("L",c,true); LEG.mark("L",c,true); }');
+  let qPicks = 0; for (let i = 0; i < 200; i++) if (w.__gPL(3).item.id === 'q') qPicks++;
+  ok(qPicks > 100, 'Letter Hunt drills the unknown letter most of the time (q picked ' + qPicks + '/200)');
+
+  // Egg Hatch: tap 1→N in order; wrong taps don't advance; finishing levels up.
+  w.localStorage.setItem('azq-lvl-eggs', '3');
+  w.startEggs();
+  ok(w.document.getElementById('eggScreen').classList.contains('on') && w.document.querySelectorAll('#eggGrid .egg').length === 30,
+     'Egg Hatch level 3 shows 30 eggs');
+  ok(w.tapEgg(5) === false && P.eggs.next === 1, 'tapping the wrong egg does not advance the count');
+  let eggsOk = true;
+  for (let n = 1; n <= 30; n++) if (!w.tapEgg(n)) eggsOk = false;
+  ok(eggsOk && P.eggs.next === 31 && w.document.querySelectorAll('#eggGrid .egg.hatched').length === 30, 'tapping 1 → 30 in order hatches every egg');
+  ok(w.eval('getLevel("eggs")') === 4 && /30/.test(w.document.getElementById('eggDone').textContent), 'finishing with few misses levels Egg Hatch up');
+  w.startEggs();
+  const order = [...w.document.querySelectorAll('#eggGrid .egg')].map(b => +b.dataset.n);
+  ok(P.eggs.scrambled && order.length === 30 && order.join() !== order.slice().sort((a, b) => a - b).join(), 'level 4+ scrambles the eggs (number recognition)');
+
+  // Grown-up Flash Check: 26 letters, name/sound toggles feed mastery, then count-aloud.
+  w.localStorage.removeItem('azq-legacy');
+  w.startFlash();
+  ok(w.document.getElementById('flashScreen').classList.contains('on') && P.flash.list.length === 26 && new Set(P.flash.list).size === 26,
+     'Flash Check covers all 26 letters once');
+  for (let i = 0; i < 26; i++) {
+    if (i % 2 === 0) w.document.getElementById('flashName').click();
+    if (i % 4 === 0) w.document.getElementById('flashSound').click();
+    w.document.getElementById('flashNext').click();
+  }
+  ok(w.document.getElementById('flashCount').style.display === 'block', 'after 26 letters the Flash Check moves to count-aloud');
+  const sum1 = P.LEG.summary();
+  ok(sum1.names === 13 && sum1.sounds === 7, 'parent-checked names/sounds become known (13 names, 7 sounds; got ' + sum1.names + '/' + sum1.sounds + ')');
+  w.document.querySelector('#flashPad button[data-n="24"]').click();
+  ok(P.LEG.summary().count === 24 && w.document.getElementById('progScreen').classList.contains('on'), 'count-aloud records 24 and opens the progress board');
+  ok(w.document.querySelectorAll('#progLetters .pl').length === 26 && w.document.querySelectorAll('#progNums .pn').length === 30 &&
+     /13\/26/.test(w.document.getElementById('progSummary').textContent), 'progress board shows 26 letters, 30 numbers and the summary');
+
   // Registered in the hub + precached for offline.
   const hub = fs.readFileSync(path.join(DIR, 'index.html'), 'utf8');
   ok(/Aziels-Dino-Quest\.html/.test(hub), "hub index.html links to Aziel's Dino Quest");

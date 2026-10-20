@@ -17,6 +17,15 @@ and one for his little brother (pre-K → kindergarten readiness):
   `startGame/startRound/nextQuestion`, generators `genLetters/genSounds/genCounting/genNumbers/genShapes/`
   `genColors/genPatterns/genRhyme/genName` (each `{q,right,choices}`, answer buttons carry `data-val`
   because answers can be images/SVG).
+  **🎒 Legacy Ready** (`#prepBtn` → `showPrep()`, deep link `?prep=1`) is focused kindergarten-entry prep
+  for letter names, letter sounds and counting to 30. `PREP` holds extra quiz activities that reuse the quiz
+  screen via `bankOf(world)` (BANKS stays at 9): `genPrepLetters`, `genPrepSounds` (`LSOUND` keyword table,
+  c/k/q share one sound group, x never in "starts with"), `genCount30` (next/missing/after/count in tens rows),
+  `pmix`. Plus Egg Hatch (`startEggs`/`tapEgg`, tap 1→30 in order, scrambled at lvl 4+), a parent-led
+  Flash Check (`startFlash`/`flashNext`/`flashCount`, mirrors the oral test) and a Progress Board
+  (`showProgress`). Per-item mastery lives in `azq-legacy` (`LEG`: last 5 tries per letter/sound/number;
+  "11" at the end = known; practice picks unknown items 75% of the time). Numbers 21-30 and phrases with no
+  Luna clip fall back to TTS.
 
 Each game is one self-contained `.html` file — open it by double-clicking, no server or build step.
 
